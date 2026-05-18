@@ -175,6 +175,15 @@
     .empty{text-align:center;padding:32px 16px;color:var(--text3);font-size:14px;}
     .no-results{text-align:center;padding:20px;color:var(--text3);font-size:13px;}
     canvas{width:100%!important;max-height:160px;}
+    .wpreset-import{width:100%;padding:12px;border:0.5px solid var(--border);border-radius:var(--radius-sm);background:var(--card2);color:var(--text);font-size:13px;margin-bottom:8px;resize:none;height:80px;font-family:inherit;}
+    .wpreset-import::placeholder{color:var(--text3);font-size:13px;}
+    .wpreset-item{display:flex;align-items:center;background:var(--card2);border-radius:var(--radius-sm);padding:12px 14px;border:0.5px solid var(--border);gap:10px;margin-bottom:6px;}
+    .wlog-day{background:var(--card2);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px;border:0.5px solid var(--border);}
+    .wlog-day-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+    .wlog-day-date{font-size:13px;font-weight:600;}
+    .wlog-day-vol{font-size:11px;color:var(--text3);}
+    .wlog-ex{font-size:13px;color:var(--text2);padding:3px 0;border-bottom:0.5px solid var(--border);}
+    .wlog-ex:last-child{border-bottom:none;}
     .scanner-wrap{position:relative;width:100%;border-radius:var(--radius-sm);overflow:hidden;background:#000;display:none;}
     .scanner-wrap.active{display:block;}
     .scanner-wrap video{width:100%;display:block;max-height:240px;object-fit:cover;}
@@ -341,6 +350,13 @@
 
   <!-- MEHR -->
   <div class="page" id="page-more">
+    <div class="card" style="cursor:pointer" onclick="showPage('weight')">
+      <div style="display:flex;align-items:center;gap:12px;padding:2px 0">
+        <i class="ti ti-chart-line" style="font-size:22px;color:var(--blue)"></i>
+        <div style="flex:1"><div style="font-size:15px;font-weight:600">Körper</div><div style="font-size:12px;color:var(--text2);margin-top:2px">Gewicht & Maße tracken</div></div>
+        <i class="ti ti-chevron-right" style="color:var(--text3)"></i>
+      </div>
+    </div>
     <div class="card">
       <div class="top-row"><div class="card-label" style="margin:0">Habits verwalten</div><button class="top-add-btn" onclick="openSheet('habit-sheet')"><i class="ti ti-plus"></i> Hinzufügen</button></div>
       <div id="habit-manage-list"><div class="empty">Noch keine Habits</div></div>
@@ -365,7 +381,6 @@
 <nav class="bottom-nav">
   <button class="bnav-btn active" onclick="showPage('dashboard')" id="nav-dashboard"><i class="ti ti-layout-dashboard"></i><span>Home</span></button>
   <button class="bnav-btn" onclick="showPage('nutrition')" id="nav-nutrition"><i class="ti ti-salad"></i><span>Nutrition</span></button>
-  <button class="bnav-btn" onclick="showPage('weight')" id="nav-weight"><i class="ti ti-chart-line"></i><span>Körper</span></button>
   <button class="bnav-btn" onclick="showPage('workout')" id="nav-workout"><i class="ti ti-barbell"></i><span>Workout</span></button>
   <button class="bnav-btn" onclick="showPage('more')" id="nav-more"><i class="ti ti-dots"></i><span>Mehr</span></button>
 </nav>
@@ -846,6 +861,99 @@ function renderMeasures(){
 }
 
 // WORKOUT
+// WORKOUT PRESETS
+let workoutPresets=load('lm_wpresets',[]);
+
+function switchWorkoutTab(t){
+  document.querySelectorAll('#page-workout .tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#page-workout .tab-content').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('#page-workout .tab-btn').forEach((b,i)=>{if(b.textContent.trim()===({'today':'Heute','presets':'Presets','history':'Verlauf','calc':'1RM'}[t]))b.classList.add('active');});
+  document.getElementById('wtab-'+t).classList.add('active');
+  if(t==='history')renderWorkoutHistory();
+}
+
+function importWorkoutPreset(){
+  const raw=document.getElementById('wpreset-code').value.trim();
+  if(!raw.startsWith('WMPRESET::'))return alert('Ungültiger Code');
+  const parts=raw.split('::');
+  if(parts.length<3)return alert('Ungültiger Code');
+  const name=parts[1];
+  const exercises=parts.slice(2).map(p=>{
+    const s=p.split(':');
+    const sets=parseInt(s[1])||3;
+    const kg=parseFloat(s[2])||0;
+    return{name:s[0],sets:Array.from({length:sets},()=>({reps:'',weight:String(kg)}))};
+  });
+  const idx=workoutPresets.findIndex(p=>p.name===name);
+  const preset={id:idx>=0?workoutPresets[idx].id:Date.now(),name,exercises};
+  if(idx>=0)workoutPresets[idx]=preset;
+  else workoutPresets.push(preset);
+  save('lm_wpresets',workoutPresets);
+  document.getElementById('wpreset-code').value='';
+  renderWorkoutPresets();
+  alert('Gespeichert: '+name);
+}
+
+function loadWorkoutPreset(id){
+  const p=workoutPresets.find(p=>p.id===id);if(!p)return;
+  // Add all exercises from preset to today's workout
+  p.exercises.forEach(ex=>{
+    if(!workout.find(w=>w.name===ex.name)){
+      workout.push({id:Date.now()+Math.random(),name:ex.name,sets:ex.sets.map(s=>({...s}))});
+    }
+  });
+  save('lm_workout_'+today,workout);
+  renderWorkout();
+  renderDashboard();
+  switchWorkoutTab('today');
+}
+
+function deleteWorkoutPreset(id){
+  workoutPresets=workoutPresets.filter(p=>p.id!==id);
+  save('lm_wpresets',workoutPresets);
+  renderWorkoutPresets();
+}
+
+function renderWorkoutPresets(){
+  const el=document.getElementById('wpreset-list');if(!el)return;
+  if(!workoutPresets.length){el.innerHTML='<div class="empty" style="padding:16px">Noch keine Presets</div>';return;}
+  el.innerHTML=workoutPresets.map(p=>`
+    <div class="wpreset-item">
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:600">${p.name}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${p.exercises.map(e=>e.name).join(' · ')}</div>
+      </div>
+      <button class="top-add-btn" style="font-size:12px;padding:7px 12px" onclick="loadWorkoutPreset(${p.id})">Laden</button>
+      <button class="del-btn" onclick="deleteWorkoutPreset(${p.id})"><i class="ti ti-trash"></i></button>
+    </div>`).join('');
+}
+
+function renderWorkoutHistory(){
+  const el=document.getElementById('workout-history');if(!el)return;
+  const days=[];
+  for(let i=1;i<=30;i++){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const key=d.toISOString().slice(0,10);
+    const w=load('lm_workout_'+key,[]);
+    if(w.length)days.push({date:key,workout:w});
+  }
+  if(!days.length){el.innerHTML='<div class="empty">Noch kein Verlauf</div>';return;}
+  el.innerHTML=days.map(d=>{
+    const lbl=new Date(d.date).toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'short'});
+    const totalVol=d.workout.reduce((s,ex)=>s+ex.sets.reduce((ss,set)=>ss+(parseFloat(set.weight)||0)*(parseInt(set.reps)||0),0),0);
+    return `<div class="wlog-day">
+      <div class="wlog-day-header">
+        <span class="wlog-day-date">${lbl}</span>
+        <span class="wlog-day-vol">${totalVol>0?Math.round(totalVol)+' kg Vol.':''}</span>
+      </div>
+      ${d.workout.map(ex=>{
+        const best=ex.sets.filter(s=>s.weight&&s.reps).sort((a,b)=>parseFloat(b.weight)-parseFloat(a.weight))[0];
+        return `<div class="wlog-ex">${ex.name}${best?' · '+ex.sets.length+' Sätze · Top: '+best.weight+'kg×'+best.reps:' · '+ex.sets.length+' Sätze'}</div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+}
+
 function addExercise(){
   const name=document.getElementById('ex-name').value.trim();if(!name)return;
   workout.push({id:Date.now(),name,sets:[{reps:'',weight:''}]});
@@ -872,7 +980,9 @@ function get1RMBest(sets){
   return best?Math.round(best)+' kg':null;
 }
 function renderWorkout(){
+  try{const lbl=document.getElementById('workout-date-lbl');if(lbl)lbl.textContent=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});}catch{}
   const el=document.getElementById('workout-list');
+  if(!el)return;
   if(!workout.length){el.innerHTML='<div class="empty">Noch keine Übungen</div>';return;}
   el.innerHTML=workout.map(ex=>{
     const prev=getLastWorkout(ex.name);
@@ -1010,7 +1120,7 @@ function renderDashboard(){
 }
 
 loadGoalInputs();
-renderFood();renderHabitsDash();renderHabitsManage();renderWeight();renderMeasures();renderWorkout();renderPresets();renderDashboard();
+renderFood();renderHabitsDash();renderHabitsManage();renderWeight();renderMeasures();renderWorkout();renderWorkoutPresets();renderPresets();renderDashboard();
 </script>
 </body>
 </html>
