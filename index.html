@@ -328,22 +328,40 @@
   <!-- WORKOUT -->
   <div class="page" id="page-workout">
     <div class="card">
-      <div class="top-row">
-        <div class="card-label" style="margin:0">Workout heute</div>
-        <button class="top-add-btn" onclick="openSheet('ex-sheet')"><i class="ti ti-plus"></i> Übung</button>
+      <div class="tab-row">
+        <button class="tab-btn active" onclick="switchWorkoutTab('today')">Heute</button>
+        <button class="tab-btn" onclick="switchWorkoutTab('presets')">Presets</button>
+        <button class="tab-btn" onclick="switchWorkoutTab('history')">Verlauf</button>
+        <button class="tab-btn" onclick="switchWorkoutTab('calc')">1RM</button>
       </div>
-      <div id="workout-list"><div class="empty">Noch keine Übungen</div></div>
-    </div>
-    <div class="card">
-      <div class="card-label">💪 1RM Rechner</div>
-      <div class="calc-row">
-        <input class="calc-input" type="number" id="calc-weight" placeholder="Gewicht (kg)" oninput="calc1RM()">
-        <input class="calc-input" type="number" id="calc-reps" placeholder="Wiederholungen" oninput="calc1RM()">
+      <div class="tab-content active" id="wtab-today">
+        <div class="top-row" style="margin-bottom:10px">
+          <span style="font-size:13px;color:var(--text2)" id="workout-date-lbl"></span>
+          <button class="top-add-btn" onclick="openSheet('ex-sheet')"><i class="ti ti-plus"></i> Übung</button>
+        </div>
+        <div id="workout-list"><div class="empty">Noch keine Übungen – oder Preset laden</div></div>
       </div>
-      <div class="calc-result" id="calc-result">
-        <div class="calc-result-val" id="calc-1rm">-</div>
-        <div class="calc-result-sub">Geschaetztes 1RM (Epley-Formel)</div>
-        <table class="calc-table" id="calc-table"></table>
+      <div class="tab-content" id="wtab-presets">
+        <div class="info-pill"><i class="ti ti-info-circle"></i> Code von Claude einfügen</div>
+        <textarea class="wpreset-import" id="wpreset-code" placeholder="WMPRESET::Push Day::Brustmaschine:3:90::Butterfly:3:70"></textarea>
+        <button class="add-btn" style="margin-bottom:12px" onclick="importWorkoutPreset()">Preset importieren</button>
+        <div class="divider"></div>
+        <div class="card-label" style="margin-top:8px">Gespeicherte Presets</div>
+        <div id="wpreset-list"><div class="empty" style="padding:16px">Noch keine Workout-Presets</div></div>
+      </div>
+      <div class="tab-content" id="wtab-history">
+        <div id="workout-history"><div class="empty">Noch kein Verlauf</div></div>
+      </div>
+      <div class="tab-content" id="wtab-calc">
+        <div class="calc-row">
+          <input class="calc-input" type="number" id="calc-weight" placeholder="Gewicht (kg)" oninput="calc1RM()">
+          <input class="calc-input" type="number" id="calc-reps" placeholder="Wiederholungen" oninput="calc1RM()">
+        </div>
+        <div class="calc-result" id="calc-result">
+          <div class="calc-result-val" id="calc-1rm">-</div>
+          <div class="calc-result-sub">Geschätztes 1RM (Epley-Formel)</div>
+          <table class="calc-table" id="calc-table"></table>
+        </div>
       </div>
     </div>
   </div>
