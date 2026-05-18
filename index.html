@@ -175,6 +175,14 @@
     .empty{text-align:center;padding:32px 16px;color:var(--text3);font-size:14px;}
     .no-results{text-align:center;padding:20px;color:var(--text3);font-size:13px;}
     canvas{width:100%!important;max-height:160px;}
+    .micro-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;}
+    .micro-item{background:var(--card2);border-radius:var(--radius-sm);padding:10px 10px;}
+    .micro-head{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;}
+    .micro-name{color:var(--text2);font-weight:500;}
+    .micro-val{color:var(--text);font-weight:600;}
+    .micro-bar-track{height:4px;background:var(--bg);border-radius:2px;overflow:hidden;}
+    .micro-bar-fill{height:100%;border-radius:2px;}
+    .micro-sub{font-size:10px;color:var(--text3);margin-top:2px;}
     .wpreset-import{width:100%;padding:12px;border:0.5px solid var(--border);border-radius:var(--radius-sm);background:var(--card2);color:var(--text);font-size:13px;margin-bottom:8px;resize:none;height:80px;font-family:inherit;}
     .wpreset-import::placeholder{color:var(--text3);font-size:13px;}
     .wpreset-item{display:flex;align-items:center;background:var(--card2);border-radius:var(--radius-sm);padding:12px 14px;border:0.5px solid var(--border);gap:10px;margin-bottom:6px;}
@@ -227,6 +235,10 @@
     <div class="card" id="streak-card" style="display:none">
       <div class="card-label">🔥 Streaks</div>
       <div id="d-streaks"></div>
+    </div>
+    <div class="card">
+      <div class="card-label">Mikronährstoffe heute</div>
+      <div class="micro-grid" id="micro-grid"><div style="grid-column:1/-1;text-align:center;padding:16px;color:var(--text3);font-size:13px">Noch keine Einträge mit Mikro-Daten</div></div>
     </div>
     <div class="card">
       <div class="card-label">Woche – Kalorien</div>
@@ -910,8 +922,14 @@ function importPreset(){
 }
 function addPresetToLog(id){
   const p=presets.find(p=>p.id===id);if(!p)return;
-  foods.push({id:Date.now(),name:p.name,kcal:p.totals.kcal,prot:p.totals.prot,fat:p.totals.fat,carbs:p.totals.carbs,ingredients:p.ingredients});
-  save('lm_foods_'+today,foods);renderFood();renderDashboard();switchNutriTab('search');
+  foods.push({
+    id:Date.now(),name:p.name,kcal:p.totals.kcal,prot:p.totals.prot,fat:p.totals.fat,carbs:p.totals.carbs,
+    ingredients:p.ingredients,
+    fiber:p.totals.fiber||0,sodium:p.totals.sodium||0,potassium:p.totals.potassium||0,
+    calcium:p.totals.calcium||0,iron:p.totals.iron||0,magnesium:p.totals.magnesium||0,
+    zinc:p.totals.zinc||0,vitC:p.totals.vitC||0,vitB12:p.totals.vitB12||0
+  });
+  save('lm_foods_'+today,foods);renderFood();renderDashboard();renderMicros();switchNutriTab('frequent');
 }
 function deletePreset(id){presets=presets.filter(p=>p.id!==id);save('lm_presets',presets);renderPresets();}
 function renderPresets(){
@@ -1313,6 +1331,42 @@ function exportCSV(type){
 function exportAll(){downloadFile('lifemaxx_backup_'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify({exported:new Date().toISOString(),goals,weights,measures,habits,presets},null,2),'application/json');}
 
 // DASHBOARD
+// Daily reference values (DRV)
+const DRV={fiber:30,sodium:2.0,potassium:3500,calcium:1000,iron:10,magnesium:350,zinc:10,vitC:100,vitB12:4};
+const DRV_UNITS={fiber:'g',sodium:'g',potassium:'mg',calcium:'mg',iron:'mg',magnesium:'mg',zinc:'mg',vitC:'mg',vitB12:'µg'};
+const DRV_LABELS={fiber:'Ballaststoffe',sodium:'Natrium',potassium:'Kalium',calcium:'Calcium',iron:'Eisen',magnesium:'Magnesium',zinc:'Zink',vitC:'Vitamin C',vitB12:'Vitamin B12'};
+const DRV_COLORS={fiber:'#34c97a',sodium:'#e8547a',potassium:'#4f8ef7',calcium:'#f5a623',iron:'#a78bfa',magnesium:'#34c97a',zinc:'#4f8ef7',vitC:'#f5a623',vitB12:'#e8547a'};
+
+function renderMicros(){
+  const el=document.getElementById('micro-grid');if(!el)return;
+  // Sum micros from today's foods that have micro data
+  const totals={fiber:0,sodium:0,potassium:0,calcium:0,iron:0,magnesium:0,zinc:0,vitC:0,vitB12:0};
+  let hasMicros=false;
+  foods.forEach(function(f){
+    Object.keys(totals).forEach(function(k){
+      if(f[k]){totals[k]=Math.round((totals[k]+f[k])*10)/10;hasMicros=true;}
+    });
+  });
+  if(!hasMicros){
+    el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:16px;color:var(--text3);font-size:13px">Noch keine Einträge mit Mikro-Daten – Presets mit Mikros hinzufügen</div>';
+    return;
+  }
+  el.innerHTML='';
+  Object.keys(totals).forEach(function(k){
+    const val=totals[k];
+    const drv=DRV[k];
+    const pct=Math.min(100,Math.round(val/drv*100));
+    const color=DRV_COLORS[k];
+    const unit=DRV_UNITS[k];
+    const div=document.createElement('div');
+    div.className='micro-item';
+    div.innerHTML='<div class="micro-head"><span class="micro-name">'+DRV_LABELS[k]+'</span><span class="micro-val">'+val+unit+'</span></div>'
+      +'<div class="micro-bar-track"><div class="micro-bar-fill" style="width:'+pct+'%;background:'+color+'"></div></div>'
+      +'<div class="micro-sub">'+pct+'% von '+drv+unit+' Tagesbedarf</div>';
+    el.appendChild(div);
+  });
+}
+
 function renderDashboard(){
   const tk=Math.round(foods.reduce((s,f)=>s+f.kcal,0));
   const tp=Math.round(foods.reduce((s,f)=>s+f.prot,0));
@@ -1334,10 +1388,11 @@ function renderDashboard(){
   if(sh.length){scard.style.display='block';document.getElementById('d-streaks').innerHTML=sh.map(h=>'<div class="streak-row"><i class="ti '+h.icon+'" style="font-size:18px;color:var(--text3)"></i><span style="flex:1;font-size:14px">'+h.name+'</span><span class="streak-badge">🔥 '+habitStreaks[h.id]+' Tage</span></div>').join('');}
   else scard.style.display='none';
   renderWeekGrid();
+  renderMicros();
 }
 
 loadGoalInputs();
-renderFood();renderHabitsDash();renderHabitsManage();renderWeight();renderMeasures();renderWorkout();renderWorkoutPresets();renderPresets();renderFrequent();renderDashboard();
+renderFood();renderHabitsDash();renderHabitsManage();renderWeight();renderMeasures();renderWorkout();renderWorkoutPresets();renderPresets();renderFrequent();renderDashboard();renderMicros();
 </script>
 </body>
 </html>
