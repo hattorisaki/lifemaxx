@@ -175,8 +175,7 @@
     .empty{text-align:center;padding:32px 16px;color:var(--text3);font-size:14px;}
     .no-results{text-align:center;padding:20px;color:var(--text3);font-size:13px;}
     canvas{width:100%!important;max-height:160px;}
-    .emoji-btn{font-size:22px;width:42px;height:42px;border-radius:10px;border:2px solid transparent;background:var(--card2);cursor:pointer;}
-    .emoji-btn.selected{border-color:var(--blue);background:rgba(79,142,247,0.15);}
+
 
     .wpreset-import{width:100%;padding:12px;border:0.5px solid var(--border);border-radius:var(--radius-sm);background:var(--card2);color:var(--text);font-size:13px;margin-bottom:8px;resize:none;height:80px;font-family:inherit;}
     .wpreset-import::placeholder{color:var(--text3);font-size:13px;}
@@ -269,7 +268,7 @@
         <div id="search-results"></div>
       </div>
       <div class="tab-content" id="ntab-preset">
-        <div class="info-pill"><i class="ti ti-info-circle"></i> Code von Claude einfuegen</div>
+        <div class="info-pill"><i class="ti ti-info-circle"></i> Code von Claude einfügen</div>
         <textarea class="preset-import" id="preset-code" placeholder="LMPRESET::Mein Gericht::Zutat:kcal:P:F:C"></textarea>
         <button class="add-btn" style="margin-bottom:12px" onclick="importPreset()">Preset importieren</button>
         <div class="divider"></div>
@@ -305,7 +304,7 @@
           <button class="sbtn primary sm" onclick="addWeight()">OK</button>
         </div>
         <canvas id="weight-chart" style="display:none"></canvas>
-        <div id="weight-log" style="margin-top:8px"><div class="empty">Noch keine Eintraege</div></div>
+        <div id="weight-log" style="margin-top:8px"><div class="empty">Noch keine Einträge</div></div>
       </div>
 
       <!-- MASSE TAB -->
@@ -315,7 +314,7 @@
           <div class="measure-input-wrap"><div class="measure-lbl">Bauch</div><input class="measure-input" type="number" id="ms-bauch" placeholder="cm" step="0.5"></div>
           <div class="measure-input-wrap"><div class="measure-lbl">Taille</div><input class="measure-input" type="number" id="ms-taille" placeholder="cm" step="0.5"></div>
           <div class="measure-input-wrap"><div class="measure-lbl">Brust</div><input class="measure-input" type="number" id="ms-brust" placeholder="cm" step="0.5"></div>
-          <div class="measure-input-wrap"><div class="measure-lbl">Hufte</div><input class="measure-input" type="number" id="ms-hufte" placeholder="cm" step="0.5"></div>
+          <div class="measure-input-wrap"><div class="measure-lbl">Hüfte</div><input class="measure-input" type="number" id="ms-hüfte" placeholder="cm" step="0.5"></div>
           <div class="measure-input-wrap"><div class="measure-lbl">Bizeps</div><input class="measure-input" type="number" id="ms-bizeps" placeholder="cm" step="0.5"></div>
           <div class="measure-input-wrap"><div class="measure-lbl">Oberschenkel</div><input class="measure-input" type="number" id="ms-oberschenkel" placeholder="cm" step="0.5"></div>
         </div>
@@ -428,7 +427,7 @@
       <div class="mp-item"><div class="mp-val" id="pp-carbs" style="color:var(--pink)">0g</div><div class="mp-lbl">Carbs</div></div>
     </div>
     <div class="portion-row"><input class="portion-input" type="number" id="portion-g" value="100" min="1" oninput="updatePortionPreview()"><span style="font-size:15px;color:var(--text2)">Gramm</span></div>
-    <button class="add-btn" onclick="confirmAdd()">Zum Log hinzufuegen</button>
+    <button class="add-btn" onclick="confirmAdd()">Zum Log hinzufügen</button>
   </div>
 </div>
 <div class="sheet-backdrop" id="habit-sheet">
@@ -436,58 +435,6 @@
     <div class="sheet-handle"></div>
     <div class="sheet-title">Habit hinzufügen</div>
     <input type="text" id="h-name" placeholder="z.B. Workout gemacht">
-    <input type="hidden" id="h-icon" value="💪">
-    <div style="font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin:4px 0 10px">Emoji wählen</div>
-    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;max-height:180px;overflow-y:auto">
-      <button class="emoji-btn" onclick="pickEmoji(this,'💪')">💪</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🏋️')">🏋️</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🏃')">🏃</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🚴')">🚴</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🧘')">🧘</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🤸')">🤸</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🏊')">🏊</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'⚽')">⚽</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🎾')">🎾</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🥊')">🥊</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🧗')">🧗</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🏇')">🏇</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🥗')">🥗</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🥤')">🥤</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'💊')">💊</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🫀')">🫀</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'😴')">😴</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🌙')">🌙</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'📖')">📖</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'✏️')">✏️</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🧠')">🧠</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🎯')">🎯</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🎸')">🎸</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🎨')">🎨</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🧹')">🧹</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🌿')">🌿</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'☀️')">☀️</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🚿')">🚿</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🪥')">🪥</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'💰')">💰</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'📱')">📱</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🚫')">🚫</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'💧')">💧</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🫁')">🫁</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🩺')">🩺</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'❤️')">❤️</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'⚡')">⚡</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🔥')">🔥</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'✅')">✅</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'⭐')">⭐</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🏆')">🏆</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🎉')">🎉</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'💡')">💡</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🕐')">🕐</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'📅')">📅</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🗓️')">🗓️</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'📊')">📊</button>
-      <button class="emoji-btn" onclick="pickEmoji(this,'🎮')">🎮</button>
-    </div>
     <div class="sheet-btns">
       <button class="sbtn" onclick="closeSheet('habit-sheet')">Abbrechen</button>
       <button class="sbtn primary" onclick="addHabit()">Hinzufügen</button>
@@ -498,7 +445,7 @@
 <div class="sheet-backdrop" id="ex-sheet">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">Übung hinzufuegen</div>
+    <div class="sheet-title">Übung hinzufügen</div>
     <input type="text" id="ex-name" placeholder="z.B. Bankdrücken">
     <div class="sheet-btns"><button class="sbtn" onclick="closeSheet('ex-sheet')">Abbrechen</button><button class="sbtn primary" onclick="addExercise()">Hinzufügen</button></div>
   </div>
@@ -506,8 +453,8 @@
 
 <script>
 const DAYS=['So','Mo','Di','Mi','Do','Fr','Sa'];
-const MEASURE_KEYS=['bauch','taille','brust','hufte','bizeps','oberschenkel'];
-const MEASURE_LABELS={bauch:'Bauch',taille:'Taille',brust:'Brust',hufte:'Hufte',bizeps:'Bizeps',oberschenkel:'O.schenkel'};
+const MEASURE_KEYS=['bauch','taille','brust','hüfte','bizeps','oberschenkel'];
+const MEASURE_LABELS={bauch:'Bauch',taille:'Taille',brust:'Brust',hüfte:'Hüfte',bizeps:'Bizeps',oberschenkel:'O.schenkel'};
 const today=new Date().toISOString().slice(0,10);
 document.getElementById('topbar-date').textContent=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
 function load(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}}
@@ -1039,7 +986,7 @@ function deleteWeight(date){weights=weights.filter(w=>w.date!==date);save('lm_we
 function renderWeight(){
   const el=document.getElementById('weight-log');
   const recent=weights.slice(-10).reverse();
-  if(!recent.length){el.innerHTML='<div class="empty">Noch keine Eintraege</div>';return;}
+  if(!recent.length){el.innerHTML='<div class="empty">Noch keine Einträge</div>';return;}
   el.innerHTML=recent.map((w,i)=>{
     const prev=recent[i+1];let dh='';
     if(prev){const d=Math.round((w.kg-prev.kg)*10)/10;const c=d<0?'diff-down':d>0?'diff-up':'diff-same';dh='<span class="weight-diff '+c+'">'+(d>0?'+':'')+d+'kg</span>';}
@@ -1314,15 +1261,9 @@ function calc1RM(){
 }
 
 // HABITS
-function pickEmoji(btn,e){
-  document.getElementById('h-icon').value=e;
-  btn.closest('.sheet').querySelectorAll('.emoji-btn').forEach(function(b){b.classList.remove('selected');});
-  btn.classList.add('selected');
-}
 function addHabit(){
   const name=document.getElementById('h-name').value.trim();if(!name)return;
-  const icon=document.getElementById('h-icon').value||'💪';
-  habits.push({id:Date.now(),name,icon,isEmoji:true});
+  habits.push({id:Date.now(),name});
   save('lm_habits',habits);document.getElementById('h-name').value='';closeSheet('habit-sheet');renderHabitsDash();renderHabitsManage();renderDashboard();
 }
 function deleteHabit(id){
@@ -1345,7 +1286,7 @@ function renderHabitsDash(){
   pending.forEach(h=>{
     html+='<div class="habit-dash-item" onclick="toggleHabit('+h.id+')">'
       +'<div class="habit-check"></div>'
-      +(h.isEmoji?'<span style="font-size:20px">'+h.icon+'</span>':'<i class="ti '+h.icon+'" style="font-size:20px;color:var(--text3)"></i>')
+      +
       +'<span style="flex:1;font-size:15px">'+h.name+'</span>'
       +((habitStreaks[h.id]||0)>1?'<span class="streak-badge">🔥 '+habitStreaks[h.id]+'</span>':'')
       +'</div>';
@@ -1355,7 +1296,7 @@ function renderHabitsDash(){
     done.forEach(h=>{
       html+='<div class="habit-dash-item" onclick="toggleHabit('+h.id+')" style="opacity:0.45">'
         +'<div class="habit-check done"><i class="ti ti-check" style="font-size:13px"></i></div>'
-        +(h.isEmoji?'<span style="font-size:20px">'+h.icon+'</span>':'<i class="ti '+h.icon+'" style="font-size:20px;color:var(--text3)"></i>')
+        +
         +'<span style="flex:1;font-size:15px;text-decoration:line-through">'+h.name+'</span>'
         +'</div>';
     });
