@@ -384,13 +384,19 @@
       <div class="settings-row"><div><div class="settings-label">Kalorien</div><div class="settings-sub">kcal / Tag</div></div><input class="settings-input" type="number" id="goal-kcal" onchange="saveGoals()"></div>
       <div class="settings-row" style="border-bottom:none"><div><div class="settings-label">Protein</div><div class="settings-sub">g / Tag</div></div><input class="settings-input" type="number" id="goal-prot" onchange="saveGoals()"></div>
     </div>
-    <div class="card">
-      <div class="card-label">📤 Export</div>
-      <button class="export-btn" onclick="exportCSV('nutrition')"><i class="ti ti-file-spreadsheet"></i> Nutrition Log (CSV)</button>
-      <button class="export-btn" onclick="exportCSV('weight')"><i class="ti ti-file-spreadsheet"></i> Gewicht Verlauf (CSV)</button>
-      <button class="export-btn" onclick="exportCSV('measures')"><i class="ti ti-file-spreadsheet"></i> Maße Verlauf (CSV)</button>
-      <button class="export-btn" onclick="exportCSV('workout')"><i class="ti ti-file-spreadsheet"></i> Workout Log (CSV)</button>
-      <button class="export-btn" onclick="exportAll()" style="border-color:var(--blue);color:var(--blue)"><i class="ti ti-database-export"></i> Alles exportieren (JSON)</button>
+    <div class="card" style="cursor:pointer" onclick="toggleExport()">
+      <div style="display:flex;align-items:center;gap:12px">
+        <i class="ti ti-database-export" style="font-size:22px;color:var(--text3)"></i>
+        <div style="flex:1"><div style="font-size:15px;font-weight:600">Daten exportieren</div><div style="font-size:12px;color:var(--text2);margin-top:2px">CSV & JSON</div></div>
+        <i class="ti ti-chevron-down" id="export-chevron" style="color:var(--text3);transition:transform 0.2s"></i>
+      </div>
+      <div id="export-panel" style="display:none;margin-top:14px" onclick="event.stopPropagation()">
+        <button class="export-btn" onclick="exportCSV('nutrition')"><i class="ti ti-file-spreadsheet"></i> Nutrition Log</button>
+        <button class="export-btn" onclick="exportCSV('weight')"><i class="ti ti-file-spreadsheet"></i> Gewicht Verlauf</button>
+        <button class="export-btn" onclick="exportCSV('measures')"><i class="ti ti-file-spreadsheet"></i> Maße Verlauf</button>
+        <button class="export-btn" onclick="exportCSV('workout')"><i class="ti ti-file-spreadsheet"></i> Workout Log</button>
+        <button class="export-btn" onclick="exportAll()" style="border-color:var(--blue);color:var(--blue)"><i class="ti ti-database-export"></i> Alles (JSON Backup)</button>
+      </div>
     </div>
   </div>
 
@@ -946,6 +952,8 @@ function renderWorkoutPresets(){
     </div>`).join('');
 }
 
+let historyEditDate=null;
+
 function renderWorkoutHistory(){
   const el=document.getElementById('workout-history');if(!el)return;
   const days=[];
@@ -956,20 +964,74 @@ function renderWorkoutHistory(){
     if(w.length)days.push({date:key,workout:w});
   }
   if(!days.length){el.innerHTML='<div class="empty">Noch kein Verlauf</div>';return;}
-  el.innerHTML=days.map(d=>{
-    const lbl=new Date(d.date).toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'short'});
-    const totalVol=d.workout.reduce((s,ex)=>s+ex.sets.reduce((ss,set)=>ss+(parseFloat(set.weight)||0)*(parseInt(set.reps)||0),0),0);
-    return `<div class="wlog-day">
-      <div class="wlog-day-header">
-        <span class="wlog-day-date">${lbl}</span>
-        <span class="wlog-day-vol">${totalVol>0?Math.round(totalVol)+' kg Vol.':''}</span>
-      </div>
-      ${d.workout.map(ex=>{
-        const best=ex.sets.filter(s=>s.weight&&s.reps).sort((a,b)=>parseFloat(b.weight)-parseFloat(a.weight))[0];
-        return `<div class="wlog-ex">${ex.name}${best?' · '+ex.sets.length+' Sätze · Top: '+best.weight+'kg×'+best.reps:' · '+ex.sets.length+' Sätze'}</div>`;
-      }).join('')}
-    </div>`;
-  }).join('');
+  el.innerHTML='';
+  days.forEach(function(d){
+    const lbl=new Date(d.date).toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'short'});
+    const totalVol=d.workout.reduce(function(s,ex){return s+ex.sets.reduce(function(ss,set){return ss+(parseFloat(set.weight)||0)*(parseInt(set.reps)||0);},0);},0);
+    const isEditing=historyEditDate===d.date;
+    const wrap=document.createElement('div');
+    wrap.className='wlog-day';
+    const header=document.createElement('div');
+    header.className='wlog-day-header';
+    header.style.cursor='pointer';
+    header.innerHTML='<span class="wlog-day-date">'+lbl+'</span>'
+      +'<div style="display:flex;align-items:center;gap:8px">'
+      +(totalVol>0?'<span class="wlog-day-vol">'+Math.round(totalVol)+' kg</span>':'')
+      +'<i class="ti ti-chevron-'+(isEditing?'up':'down')+'" style="color:var(--text3);font-size:14px"></i>'
+      +'</div>';
+    header.onclick=function(){toggleHistoryEdit(d.date);};
+    wrap.appendChild(header);
+    d.workout.forEach(function(ex){
+      const best=ex.sets.filter(function(s){return s.weight&&s.reps;}).sort(function(a,b){return parseFloat(b.weight)-parseFloat(a.weight);})[0];
+      const row=document.createElement('div');
+      row.className='wlog-ex';
+      row.textContent=ex.name+(best?' · '+ex.sets.length+' Sätze · Top: '+best.weight+'kg×'+best.reps:' · '+ex.sets.length+' Sätze');
+      wrap.appendChild(row);
+    });
+    if(isEditing){
+      const btns=document.createElement('div');
+      btns.style.cssText='display:flex;gap:8px;margin-top:12px';
+      const editBtn=document.createElement('button');
+      editBtn.className='sbtn';
+      editBtn.style.cssText='flex:1;padding:11px;font-size:13px';
+      editBtn.innerHTML='<i class="ti ti-pencil"></i> Bearbeiten';
+      editBtn.onclick=function(){loadHistoryDay(d.date);};
+      const delBtn=document.createElement('button');
+      delBtn.className='sbtn danger';
+      delBtn.style.cssText='flex:1;padding:11px;font-size:13px';
+      delBtn.innerHTML='<i class="ti ti-trash"></i> Löschen';
+      delBtn.onclick=function(){deleteHistoryDay(d.date);};
+      btns.appendChild(editBtn);
+      btns.appendChild(delBtn);
+      wrap.appendChild(btns);
+    }
+    el.appendChild(wrap);
+  });
+}
+function toggleHistoryEdit(date){
+  historyEditDate=historyEditDate===date?null:date;
+  renderWorkoutHistory();
+}
+
+function deleteHistoryDay(date){
+  if(!confirm('Workout vom '+new Date(date).toLocaleDateString('de-DE',{day:'numeric',month:'short'})+' löschen?'))return;
+  localStorage.removeItem('lm_workout_'+date);
+  historyEditDate=null;
+  renderWorkoutHistory();
+  renderDashboard();
+}
+
+function loadHistoryDay(date){
+  // Load that day into today for editing - copy to today
+  const w=load('lm_workout_'+date,[]);
+  if(!w.length)return;
+  workout=w.map(ex=>({...ex,id:Date.now()+Math.random(),sets:ex.sets.map(s=>({...s}))}));
+  save('lm_workout_'+today,workout);
+  historyEditDate=null;
+  switchWorkoutTab('today');
+  renderWorkout();
+  renderDashboard();
+  alert('Workout geladen – du kannst es jetzt für heute anpassen.');
 }
 
 function addExercise(){
@@ -1090,6 +1152,14 @@ noteEl.value=load('lm_note_'+today,'');
 noteEl.addEventListener('input',()=>save('lm_note_'+today,noteEl.value));
 
 // EXPORT
+function toggleExport(){
+  const panel=document.getElementById('export-panel');
+  const chevron=document.getElementById('export-chevron');
+  const open=panel.style.display==='none';
+  panel.style.display=open?'block':'none';
+  chevron.style.transform=open?'rotate(180deg)':'rotate(0deg)';
+}
+
 function downloadFile(name,content,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();}
 function exportCSV(type){
   const ds=new Date().toISOString().slice(0,10);
