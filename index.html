@@ -494,7 +494,10 @@ function showPage(n){
   if(n==='weight')setTimeout(renderWeightChart,50);
   if(n==='dashboard')renderWeekGrid();
 }
-function openSheet(id){document.getElementById(id).classList.add('open');}
+function openSheet(id){
+  document.getElementById(id).classList.add('open');
+  if(id==='habit-sheet')initEmojiPicker();
+}
 function closeSheet(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.sheet-backdrop').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');}));
 function switchNutriTab(t){
@@ -1262,9 +1265,37 @@ function calc1RM(){
 }
 
 // HABITS
+const HABIT_EMOJIS=['💪','🏋️','🏃','🚴','🧘','🤸','🏊','⚽','🎾','🥊','🧗','🏇',
+  '🥗','🥤','💊','🫀','😴','🌙','📖','✏️','🧠','🎯','🎸','🎨',
+  '🧹','🌿','☀️','🚿','🪥','💰','📱','🚫','💧','🫁','🩺','❤️',
+  '⚡','🔥','✅','⭐','🏆','🎉','💡','🕐','📅','🗓️','📊','🎮'];
+let selectedEmoji='💪';
+
+function initEmojiPicker(){
+  const el=document.getElementById('emoji-picker');
+  if(!el)return;
+  el.innerHTML='';
+  selectedEmoji='💪';
+  HABIT_EMOJIS.forEach(function(e){
+    const btn=document.createElement('button');
+    btn.textContent=e;
+    btn.style.cssText='font-size:24px;width:44px;height:44px;border-radius:10px;border:2px solid transparent;background:var(--card2);cursor:pointer;transition:all 0.15s;';
+    if(e===selectedEmoji)btn.style.borderColor='var(--blue)';
+    btn.onclick=function(){
+      selectedEmoji=e;
+      document.getElementById('h-icon').value=e;
+      document.querySelectorAll('#emoji-picker button').forEach(function(b){b.style.borderColor='transparent';});
+      btn.style.borderColor='var(--blue)';
+    };
+    el.appendChild(btn);
+  });
+  document.getElementById('h-icon').value=selectedEmoji;
+}
+
 function addHabit(){
   const name=document.getElementById('h-name').value.trim();if(!name)return;
-  habits.push({id:Date.now(),name,icon:document.getElementById('h-icon').value});
+  const icon=document.getElementById('h-icon').value||'💪';
+  habits.push({id:Date.now(),name,icon,isEmoji:true});
   save('lm_habits',habits);document.getElementById('h-name').value='';closeSheet('habit-sheet');renderHabitsDash();renderHabitsManage();renderDashboard();
 }
 function deleteHabit(id){
@@ -1287,7 +1318,7 @@ function renderHabitsDash(){
   pending.forEach(h=>{
     html+='<div class="habit-dash-item" onclick="toggleHabit('+h.id+')">'
       +'<div class="habit-check"></div>'
-      +'<i class="ti '+h.icon+'" style="font-size:20px;color:var(--text3)"></i>'
+      +(h.isEmoji?'<span style="font-size:20px">'+h.icon+'</span>':'<i class="ti '+h.icon+'" style="font-size:20px;color:var(--text3)"></i>')
       +'<span style="flex:1;font-size:15px">'+h.name+'</span>'
       +((habitStreaks[h.id]||0)>1?'<span class="streak-badge">🔥 '+habitStreaks[h.id]+'</span>':'')
       +'</div>';
@@ -1297,7 +1328,7 @@ function renderHabitsDash(){
     done.forEach(h=>{
       html+='<div class="habit-dash-item" onclick="toggleHabit('+h.id+')" style="opacity:0.45">'
         +'<div class="habit-check done"><i class="ti ti-check" style="font-size:13px"></i></div>'
-        +'<i class="ti '+h.icon+'" style="font-size:20px;color:var(--text3)"></i>'
+        +(h.isEmoji?'<span style="font-size:20px">'+h.icon+'</span>':'<i class="ti '+h.icon+'" style="font-size:20px;color:var(--text3)"></i>')
         +'<span style="flex:1;font-size:15px;text-decoration:line-through">'+h.name+'</span>'
         +'</div>';
     });
