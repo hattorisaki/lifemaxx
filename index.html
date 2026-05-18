@@ -252,7 +252,7 @@
         <div class="mf-row"><input class="mf-input mf-input-full" type="text" id="m-name" placeholder="Name"></div>
         <div class="mf-row"><input class="mf-input" type="number" id="m-kcal" placeholder="kcal"><input class="mf-input" type="number" id="m-prot" placeholder="Protein (g)"></div>
         <div class="mf-row"><input class="mf-input" type="number" id="m-fat" placeholder="Fett (g)"><input class="mf-input" type="number" id="m-carbs" placeholder="Carbs (g)"></div>
-        <button class="add-btn" onclick="addManual()">Hinzufuegen</button>
+        <button class="add-btn" onclick="addManual()">Hinzufügen</button>
       </div>
     </div>
     <div class="card">
@@ -266,7 +266,7 @@
     <div class="card">
       <div class="tab-row">
         <button class="tab-btn active" onclick="switchBodyTab('weight')">Gewicht</button>
-        <button class="tab-btn" onclick="switchBodyTab('measures')">Masse</button>
+        <button class="tab-btn" onclick="switchBodyTab('measures')">Maße</button>
       </div>
 
       <!-- GEWICHT TAB -->
@@ -282,7 +282,7 @@
 
       <!-- MASSE TAB -->
       <div class="tab-content" id="btab-measures">
-        <div style="font-size:12px;color:var(--text3);margin-bottom:12px;">Alle Angaben in cm – nur ausfullen was du messen willst</div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:12px;">Alle Angaben in cm – nur ausfüllen was du messen willst</div>
         <div class="measures-grid">
           <div class="measure-input-wrap"><div class="measure-lbl">Bauch</div><input class="measure-input" type="number" id="ms-bauch" placeholder="cm" step="0.5"></div>
           <div class="measure-input-wrap"><div class="measure-lbl">Taille</div><input class="measure-input" type="number" id="ms-taille" placeholder="cm" step="0.5"></div>
@@ -296,7 +296,7 @@
     </div>
 
     <div class="card" id="measures-log-card" style="display:none">
-      <div class="card-label">Masse Verlauf</div>
+      <div class="card-label">Maße Verlauf</div>
       <div id="measures-log"></div>
     </div>
   </div>
@@ -306,9 +306,9 @@
     <div class="card">
       <div class="top-row">
         <div class="card-label" style="margin:0">Workout heute</div>
-        <button class="top-add-btn" onclick="openSheet('ex-sheet')"><i class="ti ti-plus"></i> Uebung</button>
+        <button class="top-add-btn" onclick="openSheet('ex-sheet')"><i class="ti ti-plus"></i> Übung</button>
       </div>
-      <div id="workout-list"><div class="empty">Noch keine Uebungen</div></div>
+      <div id="workout-list"><div class="empty">Noch keine Übungen</div></div>
     </div>
     <div class="card">
       <div class="card-label">💪 1RM Rechner</div>
@@ -327,7 +327,7 @@
   <!-- MEHR -->
   <div class="page" id="page-more">
     <div class="card">
-      <div class="top-row"><div class="card-label" style="margin:0">Habits verwalten</div><button class="top-add-btn" onclick="openSheet('habit-sheet')"><i class="ti ti-plus"></i> Hinzufuegen</button></div>
+      <div class="top-row"><div class="card-label" style="margin:0">Habits verwalten</div><button class="top-add-btn" onclick="openSheet('habit-sheet')"><i class="ti ti-plus"></i> Hinzufügen</button></div>
       <div id="habit-manage-list"><div class="empty">Noch keine Habits</div></div>
     </div>
     <div class="card">
@@ -339,7 +339,7 @@
       <div class="card-label">📤 Export</div>
       <button class="export-btn" onclick="exportCSV('nutrition')"><i class="ti ti-file-spreadsheet"></i> Nutrition Log (CSV)</button>
       <button class="export-btn" onclick="exportCSV('weight')"><i class="ti ti-file-spreadsheet"></i> Gewicht Verlauf (CSV)</button>
-      <button class="export-btn" onclick="exportCSV('measures')"><i class="ti ti-file-spreadsheet"></i> Masse Verlauf (CSV)</button>
+      <button class="export-btn" onclick="exportCSV('measures')"><i class="ti ti-file-spreadsheet"></i> Maße Verlauf (CSV)</button>
       <button class="export-btn" onclick="exportCSV('workout')"><i class="ti ti-file-spreadsheet"></i> Workout Log (CSV)</button>
       <button class="export-btn" onclick="exportAll()" style="border-color:var(--blue);color:var(--blue)"><i class="ti ti-database-export"></i> Alles exportieren (JSON)</button>
     </div>
@@ -350,7 +350,7 @@
 <nav class="bottom-nav">
   <button class="bnav-btn active" onclick="showPage('dashboard')" id="nav-dashboard"><i class="ti ti-layout-dashboard"></i><span>Home</span></button>
   <button class="bnav-btn" onclick="showPage('nutrition')" id="nav-nutrition"><i class="ti ti-salad"></i><span>Nutrition</span></button>
-  <button class="bnav-btn" onclick="showPage('weight')" id="nav-weight"><i class="ti ti-chart-line"></i><span>Koerper</span></button>
+  <button class="bnav-btn" onclick="showPage('weight')" id="nav-weight"><i class="ti ti-chart-line"></i><span>Körper</span></button>
   <button class="bnav-btn" onclick="showPage('workout')" id="nav-workout"><i class="ti ti-barbell"></i><span>Workout</span></button>
   <button class="bnav-btn" onclick="showPage('more')" id="nav-more"><i class="ti ti-dots"></i><span>Mehr</span></button>
 </nav>
@@ -378,21 +378,21 @@
     <select id="h-icon">
       <option value="ti-run">Sport / Bewegung</option>
       <option value="ti-barbell">Training</option>
-      <option value="ti-moon">Frueh schlafen</option>
+      <option value="ti-moon">Früh schlafen</option>
       <option value="ti-book">Lesen</option>
       <option value="ti-brain">Meditieren</option>
       <option value="ti-pill">Supplement</option>
       <option value="ti-check">Allgemein</option>
     </select>
-    <div class="sheet-btns"><button class="sbtn" onclick="closeSheet('habit-sheet')">Abbrechen</button><button class="sbtn primary" onclick="addHabit()">Hinzufuegen</button></div>
+    <div class="sheet-btns"><button class="sbtn" onclick="closeSheet('habit-sheet')">Abbrechen</button><button class="sbtn primary" onclick="addHabit()">Hinzufügen</button></div>
   </div>
 </div>
 <div class="sheet-backdrop" id="ex-sheet">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">Uebung hinzufuegen</div>
-    <input type="text" id="ex-name" placeholder="z.B. Bankdruecken">
-    <div class="sheet-btns"><button class="sbtn" onclick="closeSheet('ex-sheet')">Abbrechen</button><button class="sbtn primary" onclick="addExercise()">Hinzufuegen</button></div>
+    <div class="sheet-title">Übung hinzufuegen</div>
+    <input type="text" id="ex-name" placeholder="z.B. Bankdrücken">
+    <div class="sheet-btns"><button class="sbtn" onclick="closeSheet('ex-sheet')">Abbrechen</button><button class="sbtn primary" onclick="addExercise()">Hinzufügen</button></div>
   </div>
 </div>
 
@@ -466,9 +466,28 @@ async function doSearch(q){
   const el=document.getElementById('search-results');
   el.innerHTML='<div class="spinner">Suche laeuft...</div>';
   try{
-    const r=await fetch('https://de.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(q)+'&search_simple=1&action=process&json=1&page_size=7&fields=product_name,brands,nutriments');
+    const urls=[
+      'https://de.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(q)+'&search_simple=1&action=process&json=1&page_size=10&fields=product_name,brands,nutriments,languages_codes',
+      'https://world.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(q)+'&search_simple=1&action=process&json=1&page_size=10&fields=product_name,brands,nutriments,languages_codes'
+    ];
+    let allProds=[];
+    for(const url of urls){
+      try{const rr=await fetch(url);const dd=await rr.json();allProds=[...allProds,...(dd.products||[])]}catch{}
+    }
+    // deduplicate by product_name
+    const seen=new Set();
+    allProds=allProds.filter(p=>{if(!p.product_name||seen.has(p.product_name))return false;seen.add(p.product_name);return true;});
+    // score: prefer German names (contain umlauts or match German patterns), deprioritize clearly non-German
+    const deChars=/[äöüÄÖÜß]/;
+    const nonDePattern=/^(le |la |les |el |los |il |gli |les |the |die |der |das )/i;
+    allProds.sort((a,b)=>{
+      const aDE=deChars.test(a.product_name)?1:0;
+      const bDE=deChars.test(b.product_name)?1:0;
+      return bDE-aDE;
+    });
+    const r={ok:true};const d={products:allProds};
     const d=await r.json();
-    const prods=(d.products||[]).filter(p=>p.product_name&&p.nutriments&&p.nutriments['energy-kcal_100g']!=null);
+    const prods=(d.products||[]).filter(p=>p.product_name&&p.nutriments&&p.nutriments['energy-kcal_100g']!=null).slice(0,7);
     if(!prods.length){el.innerHTML='<div class="no-results">Nichts gefunden</div>';return;}
     el.innerHTML='<div class="results">'+prods.map((p,i)=>{
       const kcal=Math.round(p.nutriments['energy-kcal_100g']||0);
@@ -515,8 +534,8 @@ function renderFood(){
 // PRESETS
 function importPreset(){
   const raw=document.getElementById('preset-code').value.trim();
-  if(!raw.startsWith('LMPRESET::'))return alert('Ungueltig');
-  const parts=raw.split('::');if(parts.length<3)return alert('Ungueltig');
+  if(!raw.startsWith('LMPRESET::'))return alert('Ungültig');
+  const parts=raw.split('::');if(parts.length<3)return alert('Ungültig');
   const name=parts[1];
   const ingredients=parts.slice(2).map(p=>{const s=p.split(':');return{name:s[0],kcal:parseInt(s[1])||0,prot:parseInt(s[2])||0,fat:parseInt(s[3])||0,carbs:parseInt(s[4])||0};});
   const totals=ingredients.reduce((a,i)=>({kcal:a.kcal+i.kcal,prot:a.prot+i.prot,fat:a.fat+i.fat,carbs:a.carbs+i.carbs}),{kcal:0,prot:0,fat:0,carbs:0});
@@ -582,7 +601,7 @@ function saveMeasures(){
   save('lm_measures',measures);
   MEASURE_KEYS.forEach(k=>document.getElementById('ms-'+k).value='');
   renderMeasures();
-  alert('Masse gespeichert!');
+  alert('Maße gespeichert!');
 }
 function renderMeasures(){
   const card=document.getElementById('measures-log-card');
@@ -633,7 +652,7 @@ function get1RMBest(sets){
 }
 function renderWorkout(){
   const el=document.getElementById('workout-list');
-  if(!workout.length){el.innerHTML='<div class="empty">Noch keine Uebungen</div>';return;}
+  if(!workout.length){el.innerHTML='<div class="empty">Noch keine Übungen</div>';return;}
   el.innerHTML=workout.map(ex=>{
     const prev=getLastWorkout(ex.name);
     const orm=get1RMBest(ex.sets);
@@ -738,7 +757,7 @@ function exportCSV(type){
     measures.forEach(m=>rows.push([m.date,...MEASURE_KEYS.map(k=>m[k]||'')]));
     downloadFile('lifemaxx_masse_'+ds+'.csv',rows.map(r=>r.join(',')).join('\n'),'text/csv');
   }else if(type==='workout'){
-    const rows=[['Datum','Uebung','Set','Wdh','Gewicht kg']];
+    const rows=[['Datum','Übung','Set','Wdh','Gewicht kg']];
     for(let i=30;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const key=d.toISOString().slice(0,10);(load('lm_workout_'+key,[])).forEach(ex=>ex.sets.forEach((s,si)=>rows.push([key,ex.name,si+1,s.reps,s.weight])));}
     downloadFile('lifemaxx_workout_'+ds+'.csv',rows.map(r=>r.join(',')).join('\n'),'text/csv');
   }
@@ -757,9 +776,9 @@ function renderDashboard(){
   document.getElementById('d-prot').textContent=tp+'g';
   document.getElementById('d-habits').textContent=done+'/'+habits.length;
   document.getElementById('d-weight').textContent=lw;
-  document.getElementById('d-workout').textContent=workout.length?workout.length+' Ueb.':'-';
-  document.getElementById('pl-fat').textContent=tf+'g Fett';
-  document.getElementById('pl-carbs').textContent=tc+'g Carbs';
+  document.getElementById('d-workout').textContent=workout.length?workout.length+' Üb.':'-';
+  document.getElementById('pl-fat').textContent=tf+'g';
+  document.getElementById('pl-carbs').textContent=tc+'g';
   document.getElementById('pf-fat').style.width=Math.min(100,Math.round(tf/80*100))+'%';
   document.getElementById('pf-carbs').style.width=Math.min(100,Math.round(tc/200*100))+'%';
   const sh=habits.filter(h=>(habitStreaks[h.id]||0)>1);
