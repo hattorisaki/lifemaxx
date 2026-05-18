@@ -494,9 +494,31 @@ function showPage(n){
   if(n==='weight')setTimeout(renderWeightChart,50);
   if(n==='dashboard')renderWeekGrid();
 }
+const HABIT_EMOJIS=['💪','🏋️','🏃','🚴','🧘','🤸','🏊','⚽','🎾','🥊','🧗','🏇','🥗','🥤','💊','🫀','😴','🌙','📖','✏️','🧠','🎯','🎸','🎨','🧹','🌿','☀️','🚿','🪥','💰','📱','🚫','💧','🫁','🩺','❤️','⚡','🔥','✅','⭐','🏆','🎉','💡','🕐','📅','🗓️','📊','🎮'];
+let selectedEmoji='💪';
+function initEmojiPicker(){
+  const el=document.getElementById('emoji-picker');
+  if(!el)return;
+  el.innerHTML='';
+  selectedEmoji='💪';
+  HABIT_EMOJIS.forEach(function(e){
+    const btn=document.createElement('button');
+    btn.textContent=e;
+    btn.style.cssText='font-size:24px;width:44px;height:44px;border-radius:10px;border:2px solid transparent;background:var(--card2);cursor:pointer;transition:all 0.15s;';
+    if(e===selectedEmoji)btn.style.borderColor='var(--blue)';
+    btn.onclick=function(){
+      selectedEmoji=e;
+      document.getElementById('h-icon').value=e;
+      document.querySelectorAll('#emoji-picker button').forEach(function(b){b.style.borderColor='transparent';});
+      btn.style.borderColor='var(--blue)';
+    };
+    el.appendChild(btn);
+  });
+  document.getElementById('h-icon').value=selectedEmoji;
+}
 function openSheet(id){
   document.getElementById(id).classList.add('open');
-  if(id==='habit-sheet')initEmojiPicker();
+  if(id==='habit-sheet')setTimeout(initEmojiPicker,50);
 }
 function closeSheet(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.sheet-backdrop').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');}));
@@ -1265,33 +1287,6 @@ function calc1RM(){
 }
 
 // HABITS
-const HABIT_EMOJIS=['💪','🏋️','🏃','🚴','🧘','🤸','🏊','⚽','🎾','🥊','🧗','🏇',
-  '🥗','🥤','💊','🫀','😴','🌙','📖','✏️','🧠','🎯','🎸','🎨',
-  '🧹','🌿','☀️','🚿','🪥','💰','📱','🚫','💧','🫁','🩺','❤️',
-  '⚡','🔥','✅','⭐','🏆','🎉','💡','🕐','📅','🗓️','📊','🎮'];
-let selectedEmoji='💪';
-
-function initEmojiPicker(){
-  const el=document.getElementById('emoji-picker');
-  if(!el)return;
-  el.innerHTML='';
-  selectedEmoji='💪';
-  HABIT_EMOJIS.forEach(function(e){
-    const btn=document.createElement('button');
-    btn.textContent=e;
-    btn.style.cssText='font-size:24px;width:44px;height:44px;border-radius:10px;border:2px solid transparent;background:var(--card2);cursor:pointer;transition:all 0.15s;';
-    if(e===selectedEmoji)btn.style.borderColor='var(--blue)';
-    btn.onclick=function(){
-      selectedEmoji=e;
-      document.getElementById('h-icon').value=e;
-      document.querySelectorAll('#emoji-picker button').forEach(function(b){b.style.borderColor='transparent';});
-      btn.style.borderColor='var(--blue)';
-    };
-    el.appendChild(btn);
-  });
-  document.getElementById('h-icon').value=selectedEmoji;
-}
-
 function addHabit(){
   const name=document.getElementById('h-name').value.trim();if(!name)return;
   const icon=document.getElementById('h-icon').value||'💪';
