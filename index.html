@@ -1133,7 +1133,13 @@ function renderHabitsManage(){
 // WEEK GRID
 function renderWeekGrid(){
   const grid=document.getElementById('week-grid');
-  const days=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d);}
+  const days=[];
+  // Start from Monday of current week
+  const now=new Date();
+  const dow=now.getDay(); // 0=Sun, 1=Mon...
+  const monday=new Date(now);
+  monday.setDate(now.getDate()-(dow===0?6:dow-1));
+  for(let i=0;i<7;i++){const d=new Date(monday);d.setDate(monday.getDate()+i);days.push(d);}
   let total=0,count=0;
   grid.innerHTML=days.map(d=>{
     const key=d.toISOString().slice(0,10);
