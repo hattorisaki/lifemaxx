@@ -236,21 +236,22 @@
         <span>Ziel: <span id="week-goal-lbl">2.000</span></span>
       </div>
     </div>
-    <div class="card">
-      <div class="card-label">Tagesnotiz</div>
-      <textarea class="day-note" id="day-note" placeholder="Wie war der Tag? Energie, Stimmung..."></textarea>
-    </div>
+
   </div>
 
   <!-- NUTRITION -->
   <div class="page" id="page-nutrition">
     <div class="card">
       <div class="tab-row">
-        <button class="tab-btn active" onclick="switchNutriTab('search')">Suchen</button>
+        <button class="tab-btn active" onclick="switchNutriTab('frequent')">Häufig</button>
+        <button class="tab-btn" onclick="switchNutriTab('search')">Suchen</button>
         <button class="tab-btn" onclick="switchNutriTab('preset')">Presets</button>
         <button class="tab-btn" onclick="switchNutriTab('manual')">Manuell</button>
       </div>
-      <div class="tab-content active" id="ntab-search">
+      <div class="tab-content active" id="ntab-frequent">
+        <div id="frequent-list"><div class="empty" style="padding:16px">Noch keine häufigen Einträge – nach ein paar Tagen füllt sich das automatisch</div></div>
+      </div>
+      <div class="tab-content" id="ntab-search">
         <button class="scan-btn" id="scan-btn" onclick="toggleScanner()"><i class="ti ti-scan"></i> Barcode scannen</button>
         <div class="scanner-wrap" id="scanner-wrap">
           <video id="scanner-video" playsinline></video>
@@ -337,7 +338,10 @@
       <div class="tab-content active" id="wtab-today">
         <div class="top-row" style="margin-bottom:10px">
           <span style="font-size:13px;color:var(--text2)" id="workout-date-lbl"></span>
-          <button class="top-add-btn" onclick="openSheet('ex-sheet')"><i class="ti ti-plus"></i> Übung</button>
+          <div style="display:flex;gap:6px">
+            <button class="top-add-btn" style="background:var(--green);display:none" id="save-workout-btn" onclick="saveWorkoutToDate()"><i class="ti ti-device-floppy"></i> Speichern</button>
+            <button class="top-add-btn" onclick="openSheet('ex-sheet')"><i class="ti ti-plus"></i> Übung</button>
+          </div>
         </div>
         <div id="workout-list"><div class="empty">Noch keine Übungen – oder Preset laden</div></div>
       </div>
@@ -783,12 +787,112 @@ function addManual(){
   foods.push({id:Date.now(),name,kcal:Math.round(parseFloat(document.getElementById('m-kcal').value)||0),prot:Math.round(parseFloat(document.getElementById('m-prot').value)||0),fat:Math.round(parseFloat(document.getElementById('m-fat').value)||0),carbs:Math.round(parseFloat(document.getElementById('m-carbs').value)||0),ingredients:null});
   save('lm_foods_'+today,foods);['m-name','m-kcal','m-prot','m-fat','m-carbs'].forEach(id=>document.getElementById(id).value='');renderFood();renderDashboard();
 }
+
+function getFrequentFoods(){
+  // Scan last 30 days and count food name occurrences
+  const counts={};
+  const details={};
+  for(let i=0;i<30;i++){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const key=d.toISOString().slice(0,10);
+    const dayFoods=load('lm_foods_'+key,[]);
+    dayFoods.forEach(function(f){
+      const k=f.name.toLowerCase().slice(0,30);
+      counts[k]=(counts[k]||0)+1;
+      if(!details[k])details[k]=f;
+    });
+  }
+  return Object.keys(counts)
+    .sort((a,b)=>counts[b]-counts[a])
+    .slice(0,12)
+    .map(k=>({...details[k],count:counts[k]}));
+}
+
+function renderFrequent(){
+  const el=document.getElementById('frequent-list');if(!el)return;
+  const items=getFrequentFoods();
+  if(!items.length){el.innerHTML='<div class="empty" style="padding:16px">Noch keine häufigen Einträge</div>';return;}
+  el.innerHTML='';
+  items.forEach(function(f){
+    const row=document.createElement('div');
+    row.className='result-item';
+    row.style.cssText='padding:12px 0;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:10px;cursor:pointer;';
+    row.innerHTML='<div style="flex:1"><div class="log-name">'+f.name+'</div><div class="log-info">'+f.kcal+' kcal · '+f.prot+'g P</div></div>'
+      +'<span style="font-size:11px;color:var(--text3)">×'+f.count+'</span>'
+      +'<i class="ti ti-plus" style="color:var(--blue);font-size:18px"></i>';
+    row.onclick=function(){
+      // Add with portion sheet
+      selectedProduct={name:f.name,k:f.kcal,pr:f.prot,fa:f.fat,ca:f.carbs};
+      document.getElementById('ps-name').textContent=f.name;
+      document.getElementById('portion-g').value=100;
+      updatePortionPreview();
+      openSheet('portion-sheet');
+    };
+    el.appendChild(row);
+  });
+}
 function deleteFood(id){foods=foods.filter(f=>f.id!==id);save('lm_foods_'+today,foods);renderFood();renderDashboard();}
 function toggleIngredients(id){const el=document.getElementById('ing-'+id);if(el)el.classList.toggle('open');}
 function renderFood(){
   const el=document.getElementById('food-list');
   if(!foods.length){el.innerHTML='<div class="empty">Noch nichts geloggt</div>';return;}
-  el.innerHTML=foods.map(f=>'<div class="log-item"><div class="log-dot" style="background:'+(f.ingredients?'var(--purple)':'var(--blue)')+'"></div><div style="flex:1"><div class="log-name">'+f.name+'</div><div class="log-info">'+f.prot+'g P · '+f.fat+'g F · '+f.carbs+'g C</div>'+(f.ingredients?'<div class="log-ingredients" id="ing-'+f.id+'">'+f.ingredients.map(i=>'<div class="log-ing-item"><span>'+i.name+'</span><span>'+i.kcal+' kcal</span></div>').join('')+'</div>':'')+'</div><div class="log-kcal">'+f.kcal+'</div>'+(f.ingredients?'<button class="del-btn" onclick="toggleIngredients('+f.id+')" style="font-size:16px"><i class="ti ti-chevron-down"></i></button>':'')+'<button class="del-btn" onclick="deleteFood('+f.id+')"><i class="ti ti-trash"></i></button></div>').join('');
+  el.innerHTML='';
+  foods.forEach(function(f){
+    const row=document.createElement('div');
+    row.className='log-item';
+    const dot=document.createElement('div');
+    dot.className='log-dot';
+    dot.style.background=f.ingredients?'var(--purple)':'var(--blue)';
+    const info=document.createElement('div');
+    info.style.flex='1';
+    info.innerHTML='<div class="log-name">'+f.name+'</div><div class="log-info">'+f.kcal+' kcal · '+f.prot+'g P · '+f.fat+'g F · '+f.carbs+'g C</div>'
+      +(f.ingredients?'<div class="log-ingredients" id="ing-'+f.id+'">'+f.ingredients.map(i=>'<div class="log-ing-item"><span>'+i.name+'</span><span>'+i.kcal+' kcal</span></div>').join('')+'</div>':'');
+    const editBtn=document.createElement('button');
+    editBtn.className='del-btn';
+    editBtn.innerHTML='<i class="ti ti-pencil" style="font-size:17px"></i>';
+    editBtn.onclick=function(){openFoodEdit(f.id);};
+    const delBtn=document.createElement('button');
+    delBtn.className='del-btn';
+    delBtn.innerHTML='<i class="ti ti-trash"></i>';
+    delBtn.onclick=function(){deleteFood(f.id);};
+    row.appendChild(dot);
+    row.appendChild(info);
+    if(f.ingredients){
+      const togBtn=document.createElement('button');
+      togBtn.className='del-btn';
+      togBtn.style.fontSize='16px';
+      togBtn.innerHTML='<i class="ti ti-chevron-down"></i>';
+      togBtn.onclick=function(){toggleIngredients(f.id);};
+      row.appendChild(togBtn);
+    }
+    row.appendChild(editBtn);
+    row.appendChild(delBtn);
+    el.appendChild(row);
+  });
+}
+
+function openFoodEdit(id){
+  const f=foods.find(x=>x.id===id);if(!f)return;
+  document.getElementById('edit-food-id').value=id;
+  document.getElementById('edit-food-name').value=f.name;
+  document.getElementById('edit-food-kcal').value=f.kcal;
+  document.getElementById('edit-food-prot').value=f.prot;
+  document.getElementById('edit-food-fat').value=f.fat;
+  document.getElementById('edit-food-carbs').value=f.carbs;
+  openSheet('food-edit-sheet');
+}
+
+function saveFoodEdit(){
+  const id=parseInt(document.getElementById('edit-food-id').value);
+  const f=foods.find(x=>x.id===id);if(!f)return;
+  f.name=document.getElementById('edit-food-name').value||f.name;
+  f.kcal=Math.round(parseFloat(document.getElementById('edit-food-kcal').value)||0);
+  f.prot=Math.round(parseFloat(document.getElementById('edit-food-prot').value)||0);
+  f.fat=Math.round(parseFloat(document.getElementById('edit-food-fat').value)||0);
+  f.carbs=Math.round(parseFloat(document.getElementById('edit-food-carbs').value)||0);
+  save('lm_foods_'+today,foods);
+  closeSheet('food-edit-sheet');
+  renderFood();renderDashboard();
 }
 
 // PRESETS
@@ -1022,16 +1126,23 @@ function deleteHistoryDay(date){
 }
 
 function loadHistoryDay(date){
-  // Load that day into today for editing - copy to today
   const w=load('lm_workout_'+date,[]);
   if(!w.length)return;
+  // Set editing mode for that specific date
+  window._editingWorkoutDate=date;
   workout=w.map(ex=>({...ex,id:Date.now()+Math.random(),sets:ex.sets.map(s=>({...s}))}));
-  save('lm_workout_'+today,workout);
   historyEditDate=null;
   switchWorkoutTab('today');
   renderWorkout();
   renderDashboard();
-  alert('Workout geladen – du kannst es jetzt für heute anpassen.');
+}
+
+function saveWorkoutToDate(){
+  const date=window._editingWorkoutDate||today;
+  save('lm_workout_'+date,workout);
+  window._editingWorkoutDate=null;
+  renderWorkout();
+  alert('Gespeichert!');
 }
 
 function addExercise(){
@@ -1060,7 +1171,21 @@ function get1RMBest(sets){
   return best?Math.round(best)+' kg':null;
 }
 function renderWorkout(){
-  try{const lbl=document.getElementById('workout-date-lbl');if(lbl)lbl.textContent=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});}catch{}
+  try{
+    const editDate=window._editingWorkoutDate;
+    const lbl=document.getElementById('workout-date-lbl');
+    const saveBtn=document.getElementById('save-workout-btn');
+    if(lbl){
+      if(editDate){
+        lbl.textContent='Bearbeite: '+new Date(editDate).toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'short'});
+        lbl.style.color='var(--amber)';
+      } else {
+        lbl.textContent=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
+        lbl.style.color='';
+      }
+    }
+    if(saveBtn)saveBtn.style.display=editDate?'flex':'none';
+  }catch{}
   const el=document.getElementById('workout-list');
   if(!el)return;
   if(!workout.length){el.innerHTML='<div class="empty">Noch keine Übungen</div>';return;}
@@ -1153,9 +1278,7 @@ function renderWeekGrid(){
   document.getElementById('week-avg').textContent=count?Math.round(total/count).toLocaleString():0;
 }
 
-const noteEl=document.getElementById('day-note');
-noteEl.value=load('lm_note_'+today,'');
-noteEl.addEventListener('input',()=>save('lm_note_'+today,noteEl.value));
+
 
 // EXPORT
 function toggleExport(){
@@ -1214,7 +1337,7 @@ function renderDashboard(){
 }
 
 loadGoalInputs();
-renderFood();renderHabitsDash();renderHabitsManage();renderWeight();renderMeasures();renderWorkout();renderWorkoutPresets();renderPresets();renderDashboard();
+renderFood();renderHabitsDash();renderHabitsManage();renderWeight();renderMeasures();renderWorkout();renderWorkoutPresets();renderPresets();renderFrequent();renderDashboard();
 </script>
 </body>
 </html>
