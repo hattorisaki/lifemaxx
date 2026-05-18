@@ -11,6 +11,7 @@
   <title>LifeMaxx</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/@zxing/library@0.18.6/umd/index.min.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
     :root{--bg:#0a0a0f;--card:#13131a;--card2:#1c1c26;--text:#ffffff;--text2:#8a8a9a;--text3:#4a4a5a;--border:rgba(255,255,255,0.07);--blue:#4f8ef7;--green:#34c97a;--amber:#f5a623;--pink:#e8547a;--purple:#a78bfa;--radius:16px;--radius-sm:10px;}
@@ -174,6 +175,14 @@
     .empty{text-align:center;padding:32px 16px;color:var(--text3);font-size:14px;}
     .no-results{text-align:center;padding:20px;color:var(--text3);font-size:13px;}
     canvas{width:100%!important;max-height:160px;}
+    .scanner-wrap{position:relative;width:100%;border-radius:var(--radius-sm);overflow:hidden;background:#000;display:none;}
+    .scanner-wrap.active{display:block;}
+    .scanner-wrap video{width:100%;display:block;max-height:240px;object-fit:cover;}
+    .scanner-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;}
+    .scanner-box{width:200px;height:120px;border:2px solid var(--blue);border-radius:8px;box-shadow:0 0 0 1000px rgba(0,0,0,0.5);}
+    .scanner-hint{position:absolute;bottom:12px;left:0;right:0;text-align:center;font-size:12px;color:rgba(255,255,255,0.7);}
+    .scan-btn{width:100%;padding:14px;border-radius:var(--radius-sm);border:0.5px solid var(--border);background:var(--card2);color:var(--text);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;}
+    .scan-btn.active{background:rgba(232,84,122,0.15);color:var(--pink);border-color:var(--pink);}
   </style>
 </head>
 <body>
@@ -233,7 +242,13 @@
         <button class="tab-btn" onclick="switchNutriTab('manual')">Manuell</button>
       </div>
       <div class="tab-content active" id="ntab-search">
-        <div class="search-wrap">
+        <button class="scan-btn" id="scan-btn" onclick="toggleScanner()"><i class="ti ti-scan"></i> Barcode scannen</button>
+        <div class="scanner-wrap" id="scanner-wrap">
+          <video id="scanner-video" playsinline></video>
+          <div class="scanner-overlay"><div class="scanner-box"></div></div>
+          <div class="scanner-hint">Barcode in den Rahmen halten</div>
+        </div>
+        <div class="search-wrap" style="margin-top:10px">
           <i class="ti ti-search search-icon"></i>
           <input class="search-input" id="search-input" type="text" placeholder="Lebensmittel suchen..." autocomplete="off">
           <button class="search-clear" id="search-clear" style="display:none" onclick="clearSearch()"><i class="ti ti-x"></i></button>
@@ -453,6 +468,119 @@ function switchBodyTab(t){
 }
 
 // SEARCH
+// Common German base foods with USDA values as fallback
+const BASE_FOODS={
+  'ei':[{name:'Ei (Hühnerei, roh)',kcal:143,prot:12.6,fat:9.5,carbs:0.7}],
+  'eier':[{name:'Ei (Hühnerei, roh)',kcal:143,prot:12.6,fat:9.5,carbs:0.7}],
+  'banane':[{name:'Banane (frisch)',kcal:89,prot:1.1,fat:0.3,carbs:22.8}],
+  'bananen':[{name:'Banane (frisch)',kcal:89,prot:1.1,fat:0.3,carbs:22.8}],
+  'apfel':[{name:'Apfel (frisch)',kcal:52,prot:0.3,fat:0.2,carbs:13.8}],
+  'äpfel':[{name:'Apfel (frisch)',kcal:52,prot:0.3,fat:0.2,carbs:13.8}],
+  'haferflocken':[{name:'Haferflocken (kernig)',kcal:372,prot:13.5,fat:7.0,carbs:58.7}],
+  'hafer':[{name:'Haferflocken (kernig)',kcal:372,prot:13.5,fat:7.0,carbs:58.7}],
+  'hähnchenbrust':[{name:'Hähnchenbrust (roh)',kcal:110,prot:23.1,fat:1.8,carbs:0}],
+  'hühnerbrust':[{name:'Hähnchenbrust (roh)',kcal:110,prot:23.1,fat:1.8,carbs:0}],
+  'hähnchen':[{name:'Hähnchen (Brust, roh)',kcal:110,prot:23.1,fat:1.8,carbs:0}],
+  'thunfisch':[{name:'Thunfisch (im eigenen Saft)',kcal:116,prot:25.5,fat:1.0,carbs:0}],
+  'lachs':[{name:'Lachs (roh)',kcal:208,prot:20.4,fat:13.4,carbs:0}],
+  'magerquark':[{name:'Magerquark',kcal:67,prot:12.0,fat:0.2,carbs:3.7}],
+  'quark':[{name:'Magerquark',kcal:67,prot:12.0,fat:0.2,carbs:3.7}],
+  'vollmilch':[{name:'Vollmilch (3,5%)',kcal:64,prot:3.3,fat:3.5,carbs:4.7}],
+  'milch':[{name:'Vollmilch (3,5%)',kcal:64,prot:3.3,fat:3.5,carbs:4.7}],
+  'reis':[{name:'Reis (gegart)',kcal:130,prot:2.7,fat:0.3,carbs:28.2}],
+  'kartoffel':[{name:'Kartoffel (gegart)',kcal:77,prot:2.0,fat:0.1,carbs:17.0}],
+  'kartoffeln':[{name:'Kartoffel (gegart)',kcal:77,prot:2.0,fat:0.1,carbs:17.0}],
+  'brokkoli':[{name:'Brokkoli (roh)',kcal:34,prot:2.8,fat:0.4,carbs:6.6}],
+  'spinat':[{name:'Spinat (roh)',kcal:23,prot:2.9,fat:0.4,carbs:3.6}],
+  'tomate':[{name:'Tomate (frisch)',kcal:18,prot:0.9,fat:0.2,carbs:3.9}],
+  'tomaten':[{name:'Tomate (frisch)',kcal:18,prot:0.9,fat:0.2,carbs:3.9}],
+  'gurke':[{name:'Gurke (frisch)',kcal:12,prot:0.6,fat:0.1,carbs:2.2}],
+  'paprika':[{name:'Paprika (rot, frisch)',kcal:31,prot:1.0,fat:0.3,carbs:6.0}],
+  'rinderhack':[{name:'Rinderhackfleisch (20% Fett)',kcal:263,prot:17.2,fat:21.2,carbs:0}],
+  'hackfleisch':[{name:'Rinderhackfleisch (20% Fett)',kcal:263,prot:17.2,fat:21.2,carbs:0}],
+  'toast':[{name:'Toastbrot (Weizen)',kcal:266,prot:8.5,fat:3.4,carbs:48.0}],
+  'toastbrot':[{name:'Toastbrot (Weizen)',kcal:266,prot:8.5,fat:3.4,carbs:48.0}],
+  'vollkornbrot':[{name:'Vollkornbrot',kcal:241,prot:8.5,fat:2.1,carbs:45.0}],
+  'greek yogurt':[{name:'Griechischer Joghurt (2%)',kcal:73,prot:10.2,fat:1.7,carbs:3.6}],
+  'griechischer joghurt':[{name:'Griechischer Joghurt (2%)',kcal:73,prot:10.2,fat:1.7,carbs:3.6}],
+  'joghurt':[{name:'Joghurt (3,5%)',kcal:61,prot:3.5,fat:3.5,carbs:4.7}],
+  'erdnussbutter':[{name:'Erdnussbutter',kcal:588,prot:25.1,fat:50.4,carbs:13.4}],
+  'mandeln':[{name:'Mandeln',kcal:579,prot:21.2,fat:49.9,carbs:21.7}],
+  'walnüsse':[{name:'Walnüsse',kcal:654,prot:15.2,fat:65.2,carbs:13.7}],
+  'olive oil':[{name:'Olivenöl',kcal:884,prot:0,fat:100,carbs:0}],
+  'olivenöl':[{name:'Olivenöl',kcal:884,prot:0,fat:100,carbs:0}],
+  'butter':[{name:'Butter (82% Fett)',kcal:741,prot:0.7,fat:82.0,carbs:0.7}],
+  'avocado':[{name:'Avocado (frisch)',kcal:160,prot:2.0,fat:14.7,carbs:8.5}],
+  'süßkartoffel':[{name:'Süßkartoffel (gegart)',kcal:90,prot:2.0,fat:0.1,carbs:20.7}],
+  'nudeln':[{name:'Nudeln (gegart)',kcal:158,prot:5.8,fat:0.9,carbs:30.9}],
+  'pasta':[{name:'Nudeln (gegart)',kcal:158,prot:5.8,fat:0.9,carbs:30.9}],
+  'linsen':[{name:'Linsen (gegart)',kcal:116,prot:9.0,fat:0.4,carbs:20.1}],
+  'kichererbsen':[{name:'Kichererbsen (gegart)',kcal:164,prot:8.9,fat:2.6,carbs:27.4}],
+  'cottage cheese':[{name:'Cottage Cheese (4%)',kcal:98,prot:11.1,fat:4.3,carbs:3.4}],
+  'schinken':[{name:'Kochschinken (gekocht)',kcal:107,prot:17.5,fat:3.5,carbs:0.8}],
+  'skyr':[{name:'Skyr (0,2% Fett)',kcal:63,prot:11.0,fat:0.2,carbs:4.0}],
+  'reiswaffeln':[{name:'Reiswaffeln (ungesüßt)',kcal:387,prot:7.3,fat:2.8,carbs:81.5}],
+};
+
+// BARCODE SCANNER
+let codeReader=null,scanning=false;
+function toggleScanner(){
+  if(scanning)stopScanner();else startScanner();
+}
+async function startScanner(){
+  try{
+    const btn=document.getElementById('scan-btn');
+    const wrap=document.getElementById('scanner-wrap');
+    if(typeof ZXing==='undefined'){alert('Scanner wird geladen, bitte kurz warten...');return;}
+    codeReader=new ZXing.BrowserMultiFormatReader();
+    const devices=await codeReader.listVideoInputDevices();
+    if(!devices.length){alert('Keine Kamera gefunden');return;}
+    const backCam=devices.find(d=>d.label.toLowerCase().includes('back')||d.label.toLowerCase().includes('rear')||d.label.toLowerCase().includes('environment'))||devices[devices.length-1];
+    scanning=true;
+    btn.innerHTML='<i class="ti ti-x"></i> Scanner stoppen';
+    btn.classList.add('active');
+    wrap.classList.add('active');
+    await codeReader.decodeFromVideoDevice(backCam.deviceId,'scanner-video',async(result,err)=>{
+      if(result){
+        const barcode=result.getText();
+        stopScanner();
+        await lookupBarcode(barcode);
+      }
+    });
+  }catch(e){alert('Kamera-Zugriff verweigert oder nicht verfügbar');stopScanner();}
+}
+function stopScanner(){
+  if(codeReader){try{codeReader.reset();}catch{}}
+  codeReader=null;scanning=false;
+  document.getElementById('scan-btn').innerHTML='<i class="ti ti-scan"></i> Barcode scannen';
+  document.getElementById('scan-btn').classList.remove('active');
+  document.getElementById('scanner-wrap').classList.remove('active');
+}
+async function lookupBarcode(barcode){
+  const el=document.getElementById('search-results');
+  el.innerHTML='<div class="spinner">Produkt wird gesucht...</div>';
+  try{
+    const r=await fetch('https://world.openfoodfacts.org/api/v0/product/'+barcode+'.json');
+    const d=await r.json();
+    if(d.status!==1||!d.product){el.innerHTML='<div class="no-results">Produkt nicht gefunden</div>';return;}
+    const p=d.product;
+    const n=p.nutriments;
+    if(!n||!n['energy-kcal_100g']){el.innerHTML='<div class="no-results">Keine Nährwerte verfügbar</div>';return;}
+    selectedProduct={
+      name:(p.product_name_de||p.product_name||'Produkt').slice(0,50),
+      k:n['energy-kcal_100g']||0,
+      pr:n['proteins_100g']||0,
+      fa:n['fat_100g']||0,
+      ca:n['carbohydrates_100g']||0
+    };
+    document.getElementById('ps-name').textContent=selectedProduct.name;
+    document.getElementById('portion-g').value=100;
+    updatePortionPreview();
+    openSheet('portion-sheet');
+    el.innerHTML='';
+  }catch{el.innerHTML='<div class="no-results">Fehler beim Laden</div>';}
+}
+
 let searchTimer=null;
 const si=document.getElementById('search-input'),scc=document.getElementById('search-clear');
 si.addEventListener('input',()=>{
@@ -464,40 +592,82 @@ si.addEventListener('input',()=>{
 function clearSearch(){si.value='';scc.style.display='none';document.getElementById('search-results').innerHTML='';}
 async function doSearch(q){
   const el=document.getElementById('search-results');
-  el.innerHTML='<div class="spinner">Suche laeuft...</div>';
+  el.innerHTML='<div class="spinner">Suche läuft...</div>';
+  const qLow=q.toLowerCase().trim();
+  // Check local base foods first
+  if(BASE_FOODS[qLow]){
+    const local=BASE_FOODS[qLow];
+    window._prods=local.map(f=>({_local:true,product_name:f.name,nutriments:{'energy-kcal_100g':f.kcal,'proteins_100g':f.prot,'fat_100g':f.fat,'carbohydrates_100g':f.carbs}}));
+    el.innerHTML='<div class="results">'+window._prods.map((p,i)=>{
+      const kcal=Math.round(p.nutriments['energy-kcal_100g']);
+      return '<div class="result-item" onclick="selectProduct('+i+')"><div style="flex:1"><div class="result-name">'+p.product_name+'</div><div class="result-brand">Standardwert</div></div><div class="result-kcal">'+kcal+' kcal</div><i class="ti ti-chevron-right" style="color:var(--text3)"></i></div>';
+    }).join('')+'</div>';
+    // Also fetch from API in background and append
+    fetchAndAppend(q,el);
+    return;
+  }
   try{
     const urls=[
-      'https://de.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(q)+'&search_simple=1&action=process&json=1&page_size=10&fields=product_name,brands,nutriments,languages_codes',
-      'https://world.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(q)+'&search_simple=1&action=process&json=1&page_size=10&fields=product_name,brands,nutriments,languages_codes'
+      'https://de.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(q)+'&search_simple=1&action=process&json=1&page_size=12&fields=product_name,product_name_de,brands,nutriments',
+      'https://world.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(q)+'&search_simple=1&action=process&json=1&page_size=12&fields=product_name,product_name_de,brands,nutriments'
     ];
     let allProds=[];
     for(const url of urls){
-      try{const rr=await fetch(url);const dd=await rr.json();allProds=[...allProds,...(dd.products||[])]}catch{}
+      try{const rr=await fetch(url);const dd=await rr.json();allProds=[...allProds,...(dd.products||[])];}catch{}
     }
-    // deduplicate by product_name
     const seen=new Set();
-    allProds=allProds.filter(p=>{if(!p.product_name||seen.has(p.product_name))return false;seen.add(p.product_name);return true;});
-    // score: prefer German names (contain umlauts or match German patterns), deprioritize clearly non-German
-    const deChars=/[äöüÄÖÜß]/;
-    const nonDePattern=/^(le |la |les |el |los |il |gli |les |the |die |der |das )/i;
-    allProds.sort((a,b)=>{
-      const aDE=deChars.test(a.product_name)?1:0;
-      const bDE=deChars.test(b.product_name)?1:0;
-      return bDE-aDE;
+    allProds=allProds.filter(p=>{
+      const name=p.product_name_de||p.product_name;
+      if(!name||seen.has(name)||!p.nutriments||!p.nutriments['energy-kcal_100g'])return false;
+      seen.add(name);return true;
     });
-    const prods=allProds.filter(p=>p.product_name&&p.nutriments&&p.nutriments['energy-kcal_100g']!=null).slice(0,7);
-    if(!prods.length){el.innerHTML='<div class="no-results">Nichts gefunden</div>';return;}
+    const deChars=/[äöüÄÖÜß]/;
+    const junk=/^(le |la |les |el |los |bio |the )/i;
+    allProds.sort((a,b)=>{
+      const na=a.product_name_de||a.product_name,nb=b.product_name_de||b.product_name;
+      return (deChars.test(nb)?1:0)-(deChars.test(na)?1:0);
+    });
+    const prods=allProds.slice(0,8);
+    if(!prods.length){el.innerHTML='<div class="no-results">Nichts gefunden – manuell eintragen?</div>';return;}
+    window._prods=prods;
     el.innerHTML='<div class="results">'+prods.map((p,i)=>{
+      const name=p.product_name_de||p.product_name;
       const kcal=Math.round(p.nutriments['energy-kcal_100g']||0);
       const brand=p.brands?p.brands.split(',')[0].trim():'';
-      return '<div class="result-item" onclick="selectProduct('+i+')"><div style="flex:1"><div class="result-name">'+p.product_name.slice(0,45)+'</div>'+(brand?'<div class="result-brand">'+brand+'</div>':'')+'</div><div class="result-kcal">'+kcal+' kcal</div><i class="ti ti-chevron-right" style="color:var(--text3)"></i></div>';
+      return '<div class="result-item" onclick="selectProduct('+i+')"><div style="flex:1"><div class="result-name">'+name.slice(0,45)+'</div>'+(brand?'<div class="result-brand">'+brand+'</div>':'')+'</div><div class="result-kcal">'+kcal+' kcal</div><i class="ti ti-chevron-right" style="color:var(--text3)"></i></div>';
     }).join('')+'</div>';
-    window._prods=prods;
   }catch{el.innerHTML='<div class="no-results">Fehler</div>';}
+}
+async function fetchAndAppend(q,el){
+  try{
+    const r=await fetch('https://de.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(q)+'&search_simple=1&action=process&json=1&page_size=8&fields=product_name,product_name_de,brands,nutriments');
+    const d=await r.json();
+    const extra=(d.products||[]).filter(p=>{
+      const name=p.product_name_de||p.product_name;
+      return name&&p.nutriments&&p.nutriments['energy-kcal_100g']&&!window._prods.find(e=>e.product_name===name);
+    }).slice(0,5);
+    if(!extra.length)return;
+    window._prods=[...window._prods,...extra];
+    const existing=el.querySelector('.results');
+    if(existing){
+      extra.forEach((p,idx)=>{
+        const i=window._prods.length-extra.length+idx;
+        const name=p.product_name_de||p.product_name;
+        const kcal=Math.round(p.nutriments['energy-kcal_100g']||0);
+        const brand=p.brands?p.brands.split(',')[0].trim():'';
+        const div=document.createElement('div');
+        div.className='result-item';
+        div.onclick=()=>selectProduct(i);
+        div.innerHTML='<div style="flex:1"><div class="result-name">'+name.slice(0,45)+'</div>'+(brand?'<div class="result-brand">'+brand+'</div>':'')+'</div><div class="result-kcal">'+kcal+' kcal</div><i class="ti ti-chevron-right" style="color:var(--text3)"></i>';
+        existing.appendChild(div);
+      });
+    }
+  }catch{}
 }
 function selectProduct(i){
   const p=window._prods[i];
-  selectedProduct={name:p.product_name.slice(0,50),k:p.nutriments['energy-kcal_100g']||0,pr:p.nutriments['proteins_100g']||0,fa:p.nutriments['fat_100g']||0,ca:p.nutriments['carbohydrates_100g']||0};
+  const name=(p.product_name_de||p.product_name||'Produkt').slice(0,50);
+  selectedProduct={name,k:p.nutriments['energy-kcal_100g']||0,pr:p.nutriments['proteins_100g']||0,fa:p.nutriments['fat_100g']||0,ca:p.nutriments['carbohydrates_100g']||0};
   document.getElementById('ps-name').textContent=selectedProduct.name;
   document.getElementById('portion-g').value=100;
   updatePortionPreview();openSheet('portion-sheet');
