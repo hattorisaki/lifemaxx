@@ -175,6 +175,8 @@
     .empty{text-align:center;padding:32px 16px;color:var(--text3);font-size:14px;}
     .no-results{text-align:center;padding:20px;color:var(--text3);font-size:13px;}
     canvas{width:100%!important;max-height:160px;}
+    .emoji-btn{font-size:22px;width:42px;height:42px;border-radius:10px;border:2px solid transparent;background:var(--card2);cursor:pointer;}
+    .emoji-btn.selected{border-color:var(--blue);background:rgba(79,142,247,0.15);}
 
     .wpreset-import{width:100%;padding:12px;border:0.5px solid var(--border);border-radius:var(--radius-sm);background:var(--card2);color:var(--text);font-size:13px;margin-bottom:8px;resize:none;height:80px;font-family:inherit;}
     .wpreset-import::placeholder{color:var(--text3);font-size:13px;}
@@ -432,20 +434,67 @@
 <div class="sheet-backdrop" id="habit-sheet">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">Habit hinzufuegen</div>
+    <div class="sheet-title">Habit hinzufügen</div>
     <input type="text" id="h-name" placeholder="z.B. Workout gemacht">
-    <select id="h-icon">
-      <option value="ti-run">Sport / Bewegung</option>
-      <option value="ti-barbell">Training</option>
-      <option value="ti-moon">Früh schlafen</option>
-      <option value="ti-book">Lesen</option>
-      <option value="ti-brain">Meditieren</option>
-      <option value="ti-pill">Supplement</option>
-      <option value="ti-check">Allgemein</option>
-    </select>
-    <div class="sheet-btns"><button class="sbtn" onclick="closeSheet('habit-sheet')">Abbrechen</button><button class="sbtn primary" onclick="addHabit()">Hinzufügen</button></div>
+    <input type="hidden" id="h-icon" value="💪">
+    <div style="font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin:4px 0 10px">Emoji wählen</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;max-height:180px;overflow-y:auto">
+      <button class="emoji-btn" onclick="pickEmoji(this,'💪')">💪</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🏋️')">🏋️</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🏃')">🏃</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🚴')">🚴</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🧘')">🧘</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🤸')">🤸</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🏊')">🏊</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'⚽')">⚽</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🎾')">🎾</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🥊')">🥊</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🧗')">🧗</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🏇')">🏇</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🥗')">🥗</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🥤')">🥤</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'💊')">💊</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🫀')">🫀</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'😴')">😴</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🌙')">🌙</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'📖')">📖</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'✏️')">✏️</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🧠')">🧠</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🎯')">🎯</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🎸')">🎸</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🎨')">🎨</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🧹')">🧹</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🌿')">🌿</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'☀️')">☀️</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🚿')">🚿</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🪥')">🪥</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'💰')">💰</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'📱')">📱</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🚫')">🚫</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'💧')">💧</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🫁')">🫁</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🩺')">🩺</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'❤️')">❤️</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'⚡')">⚡</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🔥')">🔥</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'✅')">✅</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'⭐')">⭐</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🏆')">🏆</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🎉')">🎉</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'💡')">💡</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🕐')">🕐</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'📅')">📅</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🗓️')">🗓️</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'📊')">📊</button>
+      <button class="emoji-btn" onclick="pickEmoji(this,'🎮')">🎮</button>
+    </div>
+    <div class="sheet-btns">
+      <button class="sbtn" onclick="closeSheet('habit-sheet')">Abbrechen</button>
+      <button class="sbtn primary" onclick="addHabit()">Hinzufügen</button>
+    </div>
   </div>
 </div>
+
 <div class="sheet-backdrop" id="ex-sheet">
   <div class="sheet">
     <div class="sheet-handle"></div>
@@ -494,31 +543,9 @@ function showPage(n){
   if(n==='weight')setTimeout(renderWeightChart,50);
   if(n==='dashboard')renderWeekGrid();
 }
-const HABIT_EMOJIS=['💪','🏋️','🏃','🚴','🧘','🤸','🏊','⚽','🎾','🥊','🧗','🏇','🥗','🥤','💊','🫀','😴','🌙','📖','✏️','🧠','🎯','🎸','🎨','🧹','🌿','☀️','🚿','🪥','💰','📱','🚫','💧','🫁','🩺','❤️','⚡','🔥','✅','⭐','🏆','🎉','💡','🕐','📅','🗓️','📊','🎮'];
-let selectedEmoji='💪';
-function initEmojiPicker(){
-  const el=document.getElementById('emoji-picker');
-  if(!el)return;
-  el.innerHTML='';
-  selectedEmoji='💪';
-  HABIT_EMOJIS.forEach(function(e){
-    const btn=document.createElement('button');
-    btn.textContent=e;
-    btn.style.cssText='font-size:24px;width:44px;height:44px;border-radius:10px;border:2px solid transparent;background:var(--card2);cursor:pointer;transition:all 0.15s;';
-    if(e===selectedEmoji)btn.style.borderColor='var(--blue)';
-    btn.onclick=function(){
-      selectedEmoji=e;
-      document.getElementById('h-icon').value=e;
-      document.querySelectorAll('#emoji-picker button').forEach(function(b){b.style.borderColor='transparent';});
-      btn.style.borderColor='var(--blue)';
-    };
-    el.appendChild(btn);
-  });
-  document.getElementById('h-icon').value=selectedEmoji;
-}
+
 function openSheet(id){
   document.getElementById(id).classList.add('open');
-  if(id==='habit-sheet')setTimeout(initEmojiPicker,50);
 }
 function closeSheet(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.sheet-backdrop').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');}));
@@ -1287,6 +1314,11 @@ function calc1RM(){
 }
 
 // HABITS
+function pickEmoji(btn,e){
+  document.getElementById('h-icon').value=e;
+  btn.closest('.sheet').querySelectorAll('.emoji-btn').forEach(function(b){b.classList.remove('selected');});
+  btn.classList.add('selected');
+}
 function addHabit(){
   const name=document.getElementById('h-name').value.trim();if(!name)return;
   const icon=document.getElementById('h-icon').value||'💪';
