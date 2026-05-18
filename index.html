@@ -485,9 +485,7 @@ async function doSearch(q){
       const bDE=deChars.test(b.product_name)?1:0;
       return bDE-aDE;
     });
-    const r={ok:true};const d={products:allProds};
-    const d=await r.json();
-    const prods=(d.products||[]).filter(p=>p.product_name&&p.nutriments&&p.nutriments['energy-kcal_100g']!=null).slice(0,7);
+    const prods=allProds.filter(p=>p.product_name&&p.nutriments&&p.nutriments['energy-kcal_100g']!=null).slice(0,7);
     if(!prods.length){el.innerHTML='<div class="no-results">Nichts gefunden</div>';return;}
     el.innerHTML='<div class="results">'+prods.map((p,i)=>{
       const kcal=Math.round(p.nutriments['energy-kcal_100g']||0);
