@@ -681,39 +681,31 @@ async function doSearch(q){
   const el=document.getElementById('search-results');
   const qLow=q.toLowerCase().trim();
   if(!qLow){el.innerHTML='';return;}
-
-  // 1. Search presets first
   const presetHits=presets.filter(p=>p.name.toLowerCase().includes(qLow));
-
-  // 2. Search local DB
   const localHits=LOCAL_DB.filter(f=>f.n.toLowerCase().includes(qLow));
-
-  // Combine: presets on top, then local
   if(!presetHits.length&&!localHits.length){
     el.innerHTML='<div class="no-results">Nicht gefunden – Barcode scannen oder manuell eintragen</div>';
     return;
   }
-
-  // Build unified result list
-  let html='<div class="results">';
-  presetHits.forEach((p,i)=>{
-    html+='<div class="result-item" onclick="addPresetToLog('+p.id+');document.getElementById('search-results').innerHTML=''">'
-      +'<div style="flex:1"><div class="result-name">'+p.name+'</div>'
-      +'<div class="result-brand">Mein Preset · '+p.ingredients.length+' Zutaten</div></div>'
-      +'<div class="result-kcal">'+p.totals.kcal+' kcal</div>'
-      +'<i class="ti ti-star-filled" style="color:var(--amber);font-size:14px;margin-left:4px"></i>'
-      +'</div>';
+  const wrap=document.createElement('div');
+  wrap.className='results';
+  presetHits.forEach(p=>{
+    const div=document.createElement('div');
+    div.className='result-item';
+    div.innerHTML='<div style="flex:1"><div class="result-name">'+p.name+'</div><div class="result-brand">Mein Preset · '+p.ingredients.length+' Zutaten</div></div><div class="result-kcal">'+p.totals.kcal+' kcal</div><i class="ti ti-star-filled" style="color:var(--amber);font-size:14px;margin-left:4px"></i>';
+    div.onclick=function(){addPresetToLog(p.id);clearSearch();};
+    wrap.appendChild(div);
   });
-  localHits.slice(0,10).forEach((f,i)=>{
-    const idx='local_'+i;
-    html+='<div class="result-item" onclick="selectLocalFood('+LOCAL_DB.indexOf(f)+')">'
-      +'<div style="flex:1"><div class="result-name">'+f.n+'</div></div>'
-      +'<div class="result-kcal">'+f.k+' kcal</div>'
-      +'<i class="ti ti-chevron-right" style="color:var(--text3)"></i>'
-      +'</div>';
+  localHits.slice(0,10).forEach(f=>{
+    const idx=LOCAL_DB.indexOf(f);
+    const div=document.createElement('div');
+    div.className='result-item';
+    div.innerHTML='<div style="flex:1"><div class="result-name">'+f.n+'</div></div><div class="result-kcal">'+f.k+' kcal</div><i class="ti ti-chevron-right" style="color:var(--text3)"></i>';
+    div.onclick=function(){selectLocalFood(idx);};
+    wrap.appendChild(div);
   });
-  html+='</div>';
-  el.innerHTML=html;
+  el.innerHTML='';
+  el.appendChild(wrap);
 }
 function selectLocalFood(i){
   const f=LOCAL_DB[i];
@@ -722,7 +714,7 @@ function selectLocalFood(i){
   document.getElementById('portion-g').value=100;
   updatePortionPreview();
   openSheet('portion-sheet');
-  document.getElementById('search-results').innerHTML='';
+  clearSearch();
 }
 
 function selectProduct(i){
