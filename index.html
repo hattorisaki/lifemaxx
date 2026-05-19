@@ -1766,9 +1766,12 @@ function addPickerTouch(wrap,values,startIdx){
   wrap.addEventListener('touchstart',function(e){
     isDragging=true;startY=e.touches[0].clientY;lastY=startY;velocity=0;lastTime=Date.now();
     list.style.transition='none';
-  },{passive:true});
+    e.stopPropagation();
+  },{passive:false});
   wrap.addEventListener('touchmove',function(e){
     if(!isDragging)return;
+    e.preventDefault();
+    e.stopPropagation();
     var dy=e.touches[0].clientY-lastY;
     var now=Date.now();
     velocity=dy/(now-lastTime||1)*16;
@@ -1778,7 +1781,7 @@ function addPickerTouch(wrap,values,startIdx){
     list.style.transform='translateY('+(-(startIdx+moved)*44)+'px)';
     list.querySelectorAll('.picker-item').forEach(function(item,i){item.classList.toggle('selected',i-2===idx);});
     currentIdx=idx;
-  },{passive:true});
+  },{passive:false});
   wrap.addEventListener('touchend',function(){
     if(!isDragging)return;isDragging=false;
     snap(Math.round(currentIdx-velocity));
