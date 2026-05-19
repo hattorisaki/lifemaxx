@@ -175,6 +175,14 @@
     .empty{text-align:center;padding:32px 16px;color:var(--text3);font-size:14px;}
     .no-results{text-align:center;padding:20px;color:var(--text3);font-size:13px;}
     canvas{width:100%!important;max-height:160px;}
+    .mood-scale-btn{flex:1;padding:10px 4px;border-radius:var(--radius-sm);border:0.5px solid var(--border);background:var(--card2);color:var(--text2);cursor:pointer;font-size:12px;font-weight:600;text-align:center;transition:all 0.15s;}
+    .mood-scale-btn.active{border-color:var(--blue);background:rgba(79,142,247,0.15);color:var(--text);}
+    .mood-log-item{padding:10px 0;border-bottom:0.5px solid var(--border);}
+    .mood-log-item:last-child{border-bottom:none;}
+    .mood-log-date{font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:600;}
+    .mood-log-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+    .mood-pill{font-size:11px;padding:5px 6px;border-radius:var(--radius-sm);background:var(--card2);color:var(--text2);text-align:center;}
+    .mood-pill-label{display:block;font-size:10px;color:var(--text3);margin-top:1px;}
 
 
     .wpreset-import{width:100%;padding:12px;border:0.5px solid var(--border);border-radius:var(--radius-sm);background:var(--card2);color:var(--text);font-size:13px;margin-bottom:8px;resize:none;height:80px;font-family:inherit;}
@@ -251,7 +259,7 @@
         <button class="tab-btn" onclick="switchNutriTab('manual')">Manuell</button>
       </div>
       <div class="tab-content active" id="ntab-frequent">
-        <div id="frequent-list"><div class="empty" style="padding:16px">Noch keine häufigen Einträge – nach ein paar Tagen füllt sich das automatisch</div></div>
+        <div id="frequent-list" style="max-height:60vh;overflow-y:auto"><div class="empty" style="padding:16px">Noch keine häufigen Einträge – nach ein paar Tagen füllt sich das automatisch</div></div>
       </div>
       <div class="tab-content" id="ntab-search">
         <button class="scan-btn" id="scan-btn" onclick="toggleScanner()"><i class="ti ti-scan"></i> Barcode scannen</button>
@@ -372,6 +380,60 @@
     </div>
   </div>
 
+  <!-- MOOD -->
+  <div class="page" id="page-mood">
+    <div class="card">
+      <div class="card-label" id="mood-today-lbl">Heute</div>
+
+      <!-- SCHLAF -->
+      <div style="margin-bottom:20px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:15px;font-weight:600">😴 Schlaf</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="number" id="mood-sleep-h" placeholder="0" step="0.5" min="0" max="24"
+              style="width:70px;padding:10px;border:0.5px solid var(--border);border-radius:var(--radius-sm);background:var(--card2);color:var(--text);font-size:18px;text-align:center;font-weight:700;outline:none">
+            <span style="font-size:13px;color:var(--text2)">Std</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- KOPFSCHMERZEN -->
+      <div style="margin-bottom:20px">
+        <div style="font-size:15px;font-weight:600;margin-bottom:10px">🤕 Kopfschmerzen</div>
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <button id="headache-no" onclick="setHeadache(0)"
+            style="flex:1;padding:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border);background:var(--card2);color:var(--text);font-size:15px;font-weight:600;cursor:pointer">
+            Nein
+          </button>
+          <button id="headache-yes" onclick="setHeadache(1)"
+            style="flex:1;padding:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border);background:var(--card2);color:var(--text);font-size:15px;font-weight:600;cursor:pointer">
+            Ja
+          </button>
+        </div>
+        <div id="headache-intensity" style="display:none">
+          <div style="font-size:12px;color:var(--text2);margin-bottom:8px">Stärke</div>
+          <div style="display:flex;gap:6px">
+            <button class="hbtn" onclick="setHeadacheInt(1,this)" style="flex:1;padding:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border);background:var(--card2);color:var(--text);font-size:14px;cursor:pointer">😬 Leicht</button>
+            <button class="hbtn" onclick="setHeadacheInt(2,this)" style="flex:1;padding:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border);background:var(--card2);color:var(--text);font-size:14px;cursor:pointer">😣 Mittel</button>
+            <button class="hbtn" onclick="setHeadacheInt(3,this)" style="flex:1;padding:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border);background:var(--card2);color:var(--text);font-size:14px;cursor:pointer">🤯 Stark</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- GYM PERFORMANCE - nur wenn workout heute -->
+      <div id="gym-section" style="display:none;margin-bottom:20px">
+        <div style="font-size:15px;font-weight:600;margin-bottom:10px">🏋️ Gym Performance</div>
+        <div style="display:flex;gap:6px" id="scale-gym"></div>
+      </div>
+
+      <button class="add-btn" onclick="saveMoodLog()">Speichern</button>
+    </div>
+
+    <div class="card" id="mood-history-card" style="display:none">
+      <div class="card-label">Verlauf</div>
+      <div id="mood-history"></div>
+    </div>
+  </div>
   <!-- MEHR -->
   <div class="page" id="page-more">
     <div class="card" style="cursor:pointer" onclick="showPage('weight')">
@@ -409,10 +471,11 @@
 </div>
 
 <nav class="bottom-nav">
-  <button class="bnav-btn active" onclick="showPage('dashboard')" id="nav-dashboard"><i class="ti ti-layout-dashboard"></i><span>Home</span></button>
   <button class="bnav-btn" onclick="showPage('nutrition')" id="nav-nutrition"><i class="ti ti-salad"></i><span>Nutrition</span></button>
+  <button class="bnav-btn" onclick="showPage('mood')" id="nav-mood"><i class="ti ti-heart-rate-monitor"></i><span>Mood</span></button>
+  <button class="bnav-btn active" onclick="showPage('dashboard')" id="nav-dashboard"><i class="ti ti-layout-dashboard"></i><span>Home</span></button>
   <button class="bnav-btn" onclick="showPage('workout')" id="nav-workout"><i class="ti ti-barbell"></i><span>Workout</span></button>
-  <button class="bnav-btn" onclick="showPage('more')" id="nav-more"><i class="ti ti-dots"></i><span>Mehr</span></button>
+  <button class="bnav-btn" onclick="showPage('more')" id="nav-more"><i class="ti ti-dots"></i><span>More</span></button>
 </nav>
 
 <!-- SHEETS -->
@@ -489,6 +552,7 @@ function showPage(n){
   document.getElementById('nav-'+n).classList.add('active');
   if(n==='weight')setTimeout(renderWeightChart,50);
   if(n==='dashboard')renderWeekGrid();
+  if(n==='mood')setTimeout(initMoodPage,50);
 }
 
 function openSheet(id){
@@ -1376,7 +1440,6 @@ function renderHabitsDash(){
     done.forEach(h=>{
       html+='<div class="habit-dash-item" onclick="toggleHabit('+h.id+')" style="opacity:0.45">'
         +'<div class="habit-check done"><i class="ti ti-check" style="font-size:13px"></i></div>'
-        +
         +'<span style="flex:1;font-size:15px;text-decoration:line-through">'+h.name+'</span>'
         +'</div>';
     });
@@ -1447,6 +1510,168 @@ function exportCSV(type){
 function exportAll(){downloadFile('lifemaxx_backup_'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify({exported:new Date().toISOString(),goals,weights,measures,habits,presets},null,2),'application/json');}
 
 // DASHBOARD
+
+// MOOD LOG
+let moodData=load('lm_mood_'+today,{sleepH:0,headache:0,headacheInt:0,gym:0});
+let moodLog=load('lm_mood_log',[]);
+const GYM_LABELS=['💀 Kraftlos','😓 Schwach','😐 Ok','💪 Stark','🔥 Beast'];
+const GYM_COLORS={1:'#e8547a',2:'#f5a623',3:'#8a8a9a',4:'#4f8ef7',5:'#34c97a'};
+
+function buildGymScale(){
+  var el=document.getElementById('scale-gym');
+  if(!el)return;
+  el.innerHTML='';
+  for(var i=1;i<=5;i++){
+    var btn=document.createElement('button');
+    btn.className='mood-scale-btn';
+    btn.style.cssText='flex:1;padding:10px 4px;border-radius:var(--radius-sm);border:0.5px solid var(--border);background:var(--card2);color:var(--text2);cursor:pointer;font-size:12px;font-weight:600;text-align:center;';
+    btn.innerHTML=GYM_LABELS[i-1];
+    if(moodData.gym===i){
+      btn.style.borderColor=GYM_COLORS[i];
+      btn.style.color=GYM_COLORS[i];
+      btn.style.background='rgba(79,142,247,0.1)';
+    }
+    (function(v,b){
+      b.onclick=function(){
+        moodData.gym=v;save('lm_mood_'+today,moodData);
+        el.querySelectorAll('button').forEach(function(x){x.style.borderColor='var(--border)';x.style.color='var(--text2)';x.style.background='var(--card2)';});
+        b.style.borderColor=GYM_COLORS[v];b.style.color=GYM_COLORS[v];b.style.background='rgba(79,142,247,0.1)';
+      };
+    })(i,btn);
+    el.appendChild(btn);
+  }
+}
+
+function setHeadache(val){
+  moodData.headache=val;save('lm_mood_'+today,moodData);
+  var no=document.getElementById('headache-no');
+  var yes=document.getElementById('headache-yes');
+  if(!no||!yes)return;
+  no.style.background=val===0?'rgba(52,201,122,0.15)':'var(--card2)';
+  no.style.borderColor=val===0?'var(--green)':'var(--border)';
+  no.style.color=val===0?'var(--green)':'var(--text)';
+  yes.style.background=val===1?'rgba(232,84,122,0.15)':'var(--card2)';
+  yes.style.borderColor=val===1?'var(--pink)':'var(--border)';
+  yes.style.color=val===1?'var(--pink)':'var(--text)';
+  document.getElementById('headache-intensity').style.display=val===1?'block':'none';
+}
+
+function setHeadacheInt(val,btn){
+  moodData.headacheInt=val;save('lm_mood_'+today,moodData);
+  document.querySelectorAll('.hbtn').forEach(function(b){
+    b.style.background='var(--card2)';b.style.borderColor='var(--border)';b.style.color='var(--text)';
+  });
+  btn.style.background='rgba(79,142,247,0.15)';btn.style.borderColor='var(--blue)';btn.style.color='var(--blue)';
+}
+
+function saveMoodLog(){
+  var h=parseFloat(document.getElementById('mood-sleep-h').value)||0;
+  moodData.sleepH=h;save('lm_mood_'+today,moodData);
+  moodLog=moodLog.filter(function(m){return m.date!==today;});
+  var entry={date:today,sleepH:moodData.sleepH,headache:moodData.headache,headacheInt:moodData.headacheInt,gym:moodData.gym};
+  moodLog.push(entry);
+  moodLog.sort(function(a,b){return a.date.localeCompare(b.date);});
+  save('lm_mood_log',moodLog);
+  renderMoodHistory();
+  var btn=document.querySelector('#page-mood .add-btn');
+  if(btn){var orig=btn.textContent;btn.textContent='✅ Gespeichert!';setTimeout(function(){btn.textContent=orig;},1500);}
+}
+
+function initMoodPage(){
+  moodData=load('lm_mood_'+today,{sleepH:0,headache:0,headacheInt:0,gym:0});
+  var lbl=document.getElementById('mood-today-lbl');
+  if(lbl)lbl.textContent='Heute – '+new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
+  var sh=document.getElementById('mood-sleep-h');
+  if(sh&&moodData.sleepH)sh.value=moodData.sleepH;
+  setHeadache(moodData.headache||0);
+  if(moodData.headache&&moodData.headacheInt){
+    var hbtns=document.querySelectorAll('.hbtn');
+    var idx=moodData.headacheInt-1;
+    if(hbtns[idx]){hbtns[idx].style.background='rgba(79,142,247,0.15)';hbtns[idx].style.borderColor='var(--blue)';hbtns[idx].style.color='var(--blue)';}
+  }
+  // Show gym section only if workout today
+  var gymSection=document.getElementById('gym-section');
+  if(gymSection){
+    gymSection.style.display=workout.length?'block':'none';
+    if(workout.length)buildGymScale();
+  }
+  renderMoodHistory();
+}
+
+function editMoodLog(date){
+  // Load that day's mood into today's form for editing
+  var m=moodLog.find(function(x){return x.date===date;});
+  if(!m)return;
+  moodData=Object.assign({},m);
+  save('lm_mood_'+today,moodData);
+  var sh=document.getElementById('mood-sleep-h');
+  if(sh)sh.value=moodData.sleepH||'';
+  setHeadache(moodData.headache||0);
+  if(moodData.headache&&moodData.headacheInt){
+    var hbtns=document.querySelectorAll('.hbtn');
+    var idx=moodData.headacheInt-1;
+    if(hbtns[idx]){hbtns[idx].style.background='rgba(79,142,247,0.15)';hbtns[idx].style.borderColor='var(--blue)';hbtns[idx].style.color='var(--blue)';}
+  }
+  if(moodData.gym&&workout.length)buildGymScale();
+  // Scroll to top
+  document.getElementById('page-mood').scrollTop=0;
+}
+
+function deleteMoodLog(date){
+  moodLog=moodLog.filter(function(m){return m.date!==date;});
+  save('lm_mood_log',moodLog);
+  renderMoodHistory();
+}
+
+function renderMoodHistory(){
+  var card=document.getElementById('mood-history-card');
+  var el=document.getElementById('mood-history');
+  if(!card||!el)return;
+  var recent=moodLog.slice(-14).reverse();
+  if(!recent.length){card.style.display='none';return;}
+  card.style.display='block';
+  el.innerHTML='';
+  recent.forEach(function(m){
+    var lbl=m.date===today?'Heute':new Date(m.date).toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'short'});
+    var div=document.createElement('div');
+    div.style.cssText='padding:10px 0;border-bottom:0.5px solid var(--border);';
+    // header row
+    var header=document.createElement('div');
+    header.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;';
+    header.innerHTML='<span style="font-size:13px;font-weight:600;color:var(--text2)">'+lbl+'</span>';
+    var btns=document.createElement('div');
+    btns.style.cssText='display:flex;gap:6px;';
+    var editBtn=document.createElement('button');
+    editBtn.className='del-btn';
+    editBtn.innerHTML='<i class="ti ti-pencil" style="font-size:16px"></i>';
+    editBtn.onclick=function(){editMoodLog(m.date);};
+    var delBtn=document.createElement('button');
+    delBtn.className='del-btn';
+    delBtn.innerHTML='<i class="ti ti-trash"></i>';
+    delBtn.onclick=function(){deleteMoodLog(m.date);};
+    btns.appendChild(editBtn);
+    btns.appendChild(delBtn);
+    header.appendChild(btns);
+    div.appendChild(header);
+    // content
+    var pills=document.createElement('div');
+    pills.style.cssText='display:flex;flex-wrap:wrap;gap:6px;';
+    var items=[];
+    if(m.sleepH)items.push('😴 '+m.sleepH+'h');
+    if(m.headache===0)items.push('✅ Kein KS');
+    if(m.headache===1)items.push('🤕 KS '+(m.headacheInt?['Leicht','Mittel','Stark'][m.headacheInt-1]:''));
+    if(m.gym)items.push(GYM_LABELS[m.gym-1]);
+    items.forEach(function(txt){
+      var sp=document.createElement('span');
+      sp.style.cssText='font-size:12px;padding:4px 10px;border-radius:20px;background:var(--card2);color:var(--text2);';
+      sp.textContent=txt;
+      pills.appendChild(sp);
+    });
+    div.appendChild(pills);
+    el.appendChild(div);
+  });
+}
+
 
 function renderDashboard(){
   const tk=Math.round(foods.reduce((s,f)=>s+f.kcal,0));
